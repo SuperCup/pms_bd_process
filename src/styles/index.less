@@ -1,0 +1,74 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100%;
+}
+
+// 通用样式
+.page-container {
+  .page-header {
+    margin-bottom: 24px;
+    
+    .page-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    
+    .page-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+  }
+
+  .page-content {
+    // 页面内容样式
+  }
+}
+
+// H5适配
+@media screen and (max-width: 768px) {
+  .page-container {
+    .page-header {
+      margin-bottom: 16px;
+      
+      .page-title {
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+// 滚动条样式
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+  
+  &:hover {
+    background: #555;
+  }
+}
+

@@ -1,4 +1,4 @@
-import type { Opportunity, Customer, User, Permission, ReminderRule } from '@/types'
+import type { Opportunity, Customer, User, Permission, PMSCustomer } from '@/types'
 import dayjs from 'dayjs'
 
 // 模拟用户数据
@@ -6,6 +6,22 @@ export const mockUsers: User[] = [
   { id: '1', name: '王雄军', bu: 'BU-A', role: 'business' },
   { id: '2', name: '黄贤春', bu: 'BU-B', role: 'business' },
   { id: '3', name: '赵露明', bu: 'BU-A', role: 'business' },
+]
+
+// 模拟PMS客户数据（根据图片）
+export const mockPMSCustomers: PMSCustomer[] = [
+  { id: '1', shortName: '精明购', fullName: '精明购' },
+  { id: '2', shortName: '维达', fullName: '维达' },
+  { id: '3', shortName: 'GAP', fullName: 'GAP' },
+  { id: '4', shortName: '百事', fullName: '百事' },
+  { id: '5', shortName: '联合利华', fullName: '联合利华' },
+  { id: '6', shortName: '天诺', fullName: '天诺' },
+  { id: '7', shortName: '雀巢', fullName: '雀巢' },
+  { id: '8', shortName: '金光APP', fullName: '金光APP' },
+  { id: '9', shortName: '费列罗', fullName: '费列罗' },
+  { id: '10', shortName: '蓝月亮', fullName: '蓝月亮' },
+  { id: '11', shortName: '李锦记', fullName: '李锦记' },
+  { id: '12', shortName: '上海家化', fullName: '上海家化' },
 ]
 
 // 模拟客户数据
@@ -318,22 +334,3 @@ export const mockPermissions: Permission[] = [
   },
 ]
 
-// 模拟提醒规则
-export const mockReminderRules: ReminderRule[] = [
-  {
-    id: '1',
-    name: '每周提醒',
-    triggerDays: [1, 3, 5], // 周一、三、五
-    beforeDays: 0,
-    message: '请更新您的商机跟进状态',
-    enabled: true,
-  },
-  {
-    id: '2',
-    name: '计划完成前提醒',
-    triggerDays: [],
-    beforeDays: 3,
-    message: '您的商机即将到期，请及时跟进',
-    enabled: true,
-  },
-]

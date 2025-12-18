@@ -5,6 +5,7 @@ import type { ColumnsType } from 'antd/es/table'
 import { getPermissionConfig, getFieldConfig, updateFieldConfig } from '@/api/permission'
 import type { Permission, FieldConfig, UserRole } from '@/types'
 import { ROLE_OPTIONS } from '@/utils/constants'
+import { isH5 } from '@/utils'
 import './index.less'
 
 const Permission: React.FC = () => {
@@ -104,6 +105,51 @@ const Permission: React.FC = () => {
     },
   ]
 
+  const isMobile = isH5()
+
+  // 移动端卡片视图
+  const renderMobileView = () => {
+    return (
+      <div className="mobile-list-view">
+        {permissions.map((permission) => (
+          <Card key={permission.role} className="mobile-permission-card" style={{ marginBottom: 12 }}>
+            <div className="card-header">
+              <div className="card-title">
+                {ROLE_OPTIONS.find((opt) => opt.value === permission.role)?.label}
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="card-row">
+                <span className="card-label">权限：</span>
+                <div className="card-value">
+                  <Space wrap>
+                    {permission.permissions.map((perm) => (
+                      <Tag key={perm}>{perm}</Tag>
+                    ))}
+                  </Space>
+                </div>
+              </div>
+              <div className="card-row">
+                <span className="card-label">字段配置：</span>
+                <span className="card-value">{permission.fieldConfigs.length} 个</span>
+              </div>
+            </div>
+            <div className="card-actions">
+              <Button
+                type="primary"
+                block
+                icon={<EditOutlined />}
+                onClick={() => handleEditFieldConfig(permission.role)}
+              >
+                配置字段
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="permission-page">
       <Card>
@@ -111,13 +157,17 @@ const Permission: React.FC = () => {
           <h2 className="page-title">权限管理</h2>
         </div>
 
-        <Table
-          columns={columns}
-          dataSource={permissions}
-          loading={loading}
-          rowKey="role"
-          pagination={false}
-        />
+        {isMobile ? (
+          renderMobileView()
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={permissions}
+            loading={loading}
+            rowKey="role"
+            pagination={false}
+          />
+        )}
       </Card>
 
       <Modal
@@ -125,7 +175,7 @@ const Permission: React.FC = () => {
         open={fieldConfigModalVisible}
         onOk={handleSaveFieldConfig}
         onCancel={() => setFieldConfigModalVisible(false)}
-        width={800}
+        width={isMobile ? '90%' : 800}
       >
         <div className="field-config-list">
           {fieldConfigs.map((config, index) => (

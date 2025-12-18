@@ -9,7 +9,6 @@ import CustomerEdit from '@/pages/Customer/Edit'
 import BoardLastWeek from '@/pages/Board/LastWeek'
 import BoardKA from '@/pages/Board/KA'
 import Permission from '@/pages/Permission'
-import Reminder from '@/pages/Reminder'
 
 const router = createBrowserRouter([
   {
@@ -55,10 +54,6 @@ const router = createBrowserRouter([
       {
         path: 'permission',
         element: <Permission />,
-      },
-      {
-        path: 'reminder',
-        element: <Reminder />,
       },
     ],
   },

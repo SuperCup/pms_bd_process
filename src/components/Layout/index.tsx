@@ -8,7 +8,6 @@ import {
   ShoppingOutlined,
   TeamOutlined,
   DashboardOutlined,
-  BellOutlined,
 } from '@ant-design/icons'
 import { isH5 } from '@/utils'
 import './index.less'
@@ -35,11 +34,6 @@ const menuItems: MenuProps['items'] = [
     key: '/customer/list',
     icon: <TeamOutlined />,
     label: '客户管理',
-  },
-  {
-    key: '/reminder',
-    icon: <BellOutlined />,
-    label: '提醒设置',
   },
 ]
 
@@ -75,6 +69,17 @@ const Layout: React.FC = () => {
     />
   )
 
+  // 移动端底部导航项
+  const bottomNavItems = [
+    { key: '/board/last-week', icon: <DashboardOutlined />, label: '看板' },
+    { key: '/opportunity/list', icon: <ShoppingOutlined />, label: '商机' },
+    { key: '/customer/list', icon: <TeamOutlined />, label: '客户' },
+  ]
+
+  const handleBottomNavClick = (key: string) => {
+    navigate(key)
+  }
+
   return (
     <AntLayout className="app-layout" style={{ minHeight: '100vh' }}>
       {isMobileDevice ? (
@@ -92,7 +97,7 @@ const Layout: React.FC = () => {
             type="primary"
             icon={<MenuFoldOutlined />}
             onClick={() => setDrawerVisible(true)}
-            style={{ position: 'fixed', top: 16, left: 16, zIndex: 1000 }}
+            className="mobile-menu-button"
           />
         </>
       ) : (
@@ -113,10 +118,26 @@ const Layout: React.FC = () => {
       )}
 
       <AntLayout>
-        <Content className="app-content">
+        <Content className={`app-content ${isMobileDevice ? 'mobile-content' : ''}`}>
           <Outlet />
         </Content>
       </AntLayout>
+
+      {/* 移动端底部导航栏 */}
+      {isMobileDevice && (
+        <div className="mobile-bottom-nav">
+          {bottomNavItems.map((item) => (
+            <div
+              key={item.key}
+              className={`nav-item ${selectedKeys.includes(item.key) ? 'active' : ''}`}
+              onClick={() => handleBottomNavClick(item.key)}
+            >
+              <div className="nav-icon">{item.icon}</div>
+              <div className="nav-label">{item.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </AntLayout>
   )
 }

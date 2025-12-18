@@ -151,9 +151,53 @@
 // H5适配
 @media screen and (max-width: 768px) {
   .board-last-week-page {
+    .page-header {
+      padding: 12px 16px;
+
+      .page-title {
+        font-size: 16px;
+      }
+    }
+
     .board-content {
+      padding: 12px;
+      gap: 12px;
+
       .follower-column {
-        flex: 0 0 280px;
+        flex: 0 0 260px;
+        min-width: 260px;
+
+        .column-header {
+          padding: 10px 12px;
+
+          .follower-info {
+            .follower-name {
+              font-size: 13px;
+            }
+          }
+
+          .item-count {
+            font-size: 12px;
+          }
+        }
+
+        .cards-container {
+          gap: 10px;
+        }
+      }
+    }
+
+    .opportunity-card {
+      .ant-card-body {
+        padding: 12px;
+      }
+
+      .card-item-text {
+        font-size: 13px;
+      }
+
+      .card-date {
+        font-size: 11px;
       }
     }
   }

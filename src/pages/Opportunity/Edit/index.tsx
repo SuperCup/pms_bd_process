@@ -8,7 +8,7 @@ import { getCustomerList } from '@/api/customer'
 import { getUserList } from '@/api/user'
 import type { Opportunity, Customer, User } from '@/types'
 import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS } from '@/utils/constants'
-import { formatDate } from '@/utils'
+import { formatDate, isH5 } from '@/utils'
 import './index.less'
 
 const { TextArea } = Input
@@ -102,6 +102,8 @@ const OpportunityEdit: React.FC = () => {
     }
   }
 
+  const isMobile = isH5()
+
   return (
     <div className="opportunity-edit-page">
       <Card
@@ -109,7 +111,7 @@ const OpportunityEdit: React.FC = () => {
         title={
           <Space>
             <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
-              返回
+              {isMobile ? '' : '返回'}
             </Button>
             <span>{isEdit ? '编辑商机' : '新增商机'}</span>
           </Space>

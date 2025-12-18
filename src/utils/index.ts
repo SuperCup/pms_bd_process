@@ -37,6 +37,24 @@ export const isH5 = (): boolean => {
   return isMobile() || isWeChatWork()
 }
 
+// 判断是否应该显示提醒（距离计划完成时间前3天开始）
+export const shouldShowReminder = (planCompleteTime: string): boolean => {
+  const planDate = dayjs(planCompleteTime)
+  const today = dayjs().startOf('day')
+  const daysDiff = planDate.diff(today, 'day')
+  
+  // 距离计划完成时间前3天开始显示提醒（包括当天）
+  return daysDiff >= 0 && daysDiff <= 3
+}
+
+// 获取提醒天数
+export const getReminderDays = (planCompleteTime: string): number => {
+  const planDate = dayjs(planCompleteTime)
+  const today = dayjs().startOf('day')
+  const daysDiff = planDate.diff(today, 'day')
+  return daysDiff
+}
+
 // 防抖函数
 export const debounce = <T extends (...args: any[]) => any>(
   func: T,

@@ -4,7 +4,7 @@ import { Card, Descriptions, Tag, Button, Timeline, Space, message, Modal, Input
 import { ArrowLeftOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { getOpportunityDetail, addProgressRecord, getProgressRecords } from '@/api/opportunity'
 import type { Opportunity, ProgressRecord } from '@/types'
-import { formatDate } from '@/utils'
+import { formatDate, isH5 } from '@/utils'
 import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS } from '@/utils/constants'
 import './index.less'
 
@@ -85,6 +85,8 @@ const OpportunityDetail: React.FC = () => {
     return <Tag color={colorMap[status]}>{option?.label}</Tag>
   }
 
+  const isMobile = isH5()
+
   return (
     <div className="opportunity-detail-page">
       <Card
@@ -92,13 +94,18 @@ const OpportunityDetail: React.FC = () => {
         title={
           <Space>
             <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
-              返回
+              {isMobile ? '' : '返回'}
             </Button>
             <span>商机详情</span>
           </Space>
         }
         extra={
-          <Button type="primary" icon={<EditOutlined />} onClick={() => navigate(`/opportunity/edit/${id}`)}>
+          <Button
+            type={isMobile ? 'default' : 'primary'}
+            icon={<EditOutlined />}
+            onClick={() => navigate(`/opportunity/edit/${id}`)}
+            size={isMobile ? 'small' : 'middle'}
+          >
             编辑
           </Button>
         }

@@ -4,9 +4,11 @@ import { Form, Input, Switch, Button, Card, message, Space } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { getCustomerDetail, createCustomer, updateCustomer, checkCustomerDuplicate } from '@/api/customer'
 import type { Customer } from '@/types'
+import { isH5 } from '@/utils'
+import PMSCustomerSelect from '@/components/PMSCustomerSelect'
+import CustomerContactList from '@/components/CustomerContactList'
 import './index.less'
 
-const { TextArea } = Input
 
 const CustomerEdit: React.FC = () => {
   const { id } = useParams<{ id?: string }>()
@@ -30,11 +32,8 @@ const CustomerEdit: React.FC = () => {
         name: res.name,
         code: res.code,
         isKA: res.isKA,
-        contact: res.contact,
-        phone: res.phone,
-        address: res.address,
-        description: res.description,
-        pmsCustomerId: res.pmsCustomerId,
+        pmsCustomer: res.pmsCustomer,
+        contacts: res.contacts || [],
       })
     } catch (error) {
       message.error('获取客户详情失败')
@@ -64,11 +63,8 @@ const CustomerEdit: React.FC = () => {
         name: values.name,
         code: values.code,
         isKA: values.isKA || false,
-        contact: values.contact,
-        phone: values.phone,
-        address: values.address,
-        description: values.description,
-        pmsCustomerId: values.pmsCustomerId,
+        pmsCustomer: values.pmsCustomer,
+        contacts: values.contacts || [],
       }
 
       if (isEdit) {
@@ -86,6 +82,8 @@ const CustomerEdit: React.FC = () => {
     }
   }
 
+  const isMobile = isH5()
+
   return (
     <div className="customer-edit-page">
       <Card
@@ -93,7 +91,7 @@ const CustomerEdit: React.FC = () => {
         title={
           <Space>
             <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
-              返回
+              {isMobile ? '' : '返回'}
             </Button>
             <span>{isEdit ? '编辑客户' : '新增客户'}</span>
           </Space>
@@ -116,24 +114,12 @@ const CustomerEdit: React.FC = () => {
             <Switch checkedChildren="是" unCheckedChildren="否" />
           </Form.Item>
 
-          <Form.Item name="contact" label="联系人">
-            <Input placeholder="请输入联系人" />
+          <Form.Item name="pmsCustomer" label="PMS客户">
+            <PMSCustomerSelect placeholder="请选择PMS客户" />
           </Form.Item>
 
-          <Form.Item name="phone" label="电话">
-            <Input placeholder="请输入电话" />
-          </Form.Item>
-
-          <Form.Item name="address" label="地址">
-            <Input placeholder="请输入地址" />
-          </Form.Item>
-
-          <Form.Item name="pmsCustomerId" label="PMS客户ID">
-            <Input placeholder="请输入PMS客户ID（关联）" />
-          </Form.Item>
-
-          <Form.Item name="description" label="备注">
-            <TextArea rows={4} placeholder="请输入备注" />
+          <Form.Item name="contacts" label="客户联系人">
+            <CustomerContactList />
           </Form.Item>
 
           <Form.Item>

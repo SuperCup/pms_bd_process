@@ -1,4 +1,54 @@
 .customer-detail-page {
-  // 客户详情页面样式
+  .contacts-section {
+    .mobile-contact-list {
+      .contact-item {
+        .contact-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+
+          .contact-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+          }
+        }
+
+        .contact-row {
+          display: flex;
+          margin-bottom: 8px;
+          font-size: 14px;
+          line-height: 1.5;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          .label {
+            color: #8c8c8c;
+            min-width: 50px;
+            flex-shrink: 0;
+          }
+
+          .value {
+            color: #333;
+            flex: 1;
+            word-break: break-all;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .customer-detail-page {
+    :global {
+      .ant-descriptions-item-label {
+        min-width: 90px !important;
+      }
+    }
+  }
 }
 

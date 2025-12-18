@@ -63,11 +63,9 @@ export const createCustomer = async (data: Partial<Customer>) => {
       name: data.name || '',
       code: data.code,
       isKA: data.isKA || false,
-      contact: data.contact,
-      phone: data.phone,
+      pmsCustomer: data.pmsCustomer,
+      contacts: data.contacts || [],
       address: data.address,
-      description: data.description,
-      pmsCustomerId: data.pmsCustomerId,
       createTime: new Date().toISOString(),
       updateTime: new Date().toISOString(),
     }
@@ -134,12 +132,12 @@ export const checkCustomerDuplicate = async (name: string, excludeId?: string) =
 }
 
 // 关联PMS客户
-export const linkPMSCustomer = async (id: string, pmsCustomerId: string) => {
+export const linkPMSCustomer = async (id: string, pmsCustomer: Customer['pmsCustomer']) => {
   if (USE_MOCK) {
     await mockDelay()
     const customer = mockCustomers.find(item => item.id === id)
     if (customer) {
-      customer.pmsCustomerId = pmsCustomerId
+      customer.pmsCustomer = pmsCustomer
       customer.updateTime = new Date().toISOString()
     }
     return {}
@@ -148,7 +146,7 @@ export const linkPMSCustomer = async (id: string, pmsCustomerId: string) => {
   return request({
     url: `/customer/${id}/link-pms`,
     method: 'post',
-    data: { pmsCustomerId },
+    data: { pmsCustomer },
   })
 }
 

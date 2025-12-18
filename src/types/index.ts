@@ -17,17 +17,31 @@ export interface Opportunity {
   relatedDocs: string[] // 相关文档（链接/附件）
 }
 
+// PMS客户类型
+export interface PMSCustomer {
+  id: string
+  shortName: string // 简称
+  fullName: string // 全称
+}
+
+// 客户联系人类型
+export interface CustomerContact {
+  id: string
+  name: string // 姓名
+  phone?: string // 电话
+  position?: string // 职位
+  remark?: string // 备注
+}
+
 // 客户相关类型
 export interface Customer {
   id: string
   name: string // 客户名称
   code?: string // 客户编码
   isKA: boolean // 是否为KA客户
-  pmsCustomerId?: string // PMS客户ID（关联）
-  contact?: string // 联系人
-  phone?: string // 电话
+  pmsCustomer?: PMSCustomer // PMS客户（关联）
+  contacts?: CustomerContact[] // 联系人列表
   address?: string // 地址
-  description?: string // 备注
   createTime: string
   updateTime: string
 }
@@ -82,13 +96,11 @@ export interface Permission {
   fieldConfigs: FieldConfig[]
 }
 
-// 提醒规则
-export interface ReminderRule {
-  id: string
-  name: string
-  triggerDays: number[] // 触发日期（每周几）
-  beforeDays: number // 提前几天提醒
-  message: string // 提醒内容
-  enabled: boolean
+// 商机提醒状态
+export interface OpportunityReminder {
+  opportunityId: string
+  isActive: boolean // 是否激活提醒
+  lastRemindTime?: string // 最后提醒时间
+  remindCount: number // 提醒次数
 }
 

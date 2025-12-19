@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Button, Input, Select, Tag, Space, Card, message } from 'antd'
-import { PlusOutlined, EyeOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons'
+import { Table, Button, Input, Select, Tag, Space, Card, message, Tabs } from 'antd'
+import { PlusOutlined, EyeOutlined, EditOutlined, RightOutlined, SearchOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { getCustomerList } from '@/api/customer'
 import type { Customer } from '@/types'
@@ -17,16 +17,59 @@ const CustomerList: React.FC = () => {
   const [pageSize, setPageSize] = useState(10)
   const [keyword, setKeyword] = useState('')
   const [isKA, setIsKA] = useState<boolean | undefined>(undefined)
+  const [activeTab, setActiveTab] = useState<'all' | 'ka' | 'other'>('all')
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+
+  const isMobile = isH5()
 
   useEffect(() => {
+    setPage(1)
+    setDataSource([])
     fetchList()
-  }, [page, pageSize, keyword, isKA])
+  }, [keyword, isKA])
 
-  const fetchList = async () => {
-    setLoading(true)
+  // 移动端无限滚动
+  useEffect(() => {
+    if (!isMobile) return
+
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      const windowHeight = window.innerHeight
+      const documentHeight = document.documentElement.scrollHeight
+
+      // 距离底部100px时加载更多
+      if (scrollTop + windowHeight >= documentHeight - 100 && hasMore && !loadingMore && !loading) {
+        fetchList(true)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isMobile, hasMore, loadingMore, loading, dataSource.length])
+
+  // 移动端tab切换
+  useEffect(() => {
+    if (isH5()) {
+      if (activeTab === 'ka') {
+        setIsKA(true)
+      } else if (activeTab === 'other') {
+        setIsKA(false)
+      } else {
+        setIsKA(undefined)
+      }
+    }
+  }, [activeTab])
+
+  const fetchList = async (append = false) => {
+    if (append) {
+      setLoadingMore(true)
+    } else {
+      setLoading(true)
+    }
     try {
       const params: any = {
-        page,
+        page: append ? page + 1 : page,
         pageSize,
       }
       if (keyword) {
@@ -36,12 +79,20 @@ const CustomerList: React.FC = () => {
         params.isKA = isKA
       }
       const res = await getCustomerList(params)
-      setDataSource(res.list)
-      setTotal(res.total)
+      if (append) {
+        setDataSource([...dataSource, ...res.list])
+        setPage(page + 1)
+        setHasMore(res.list.length === pageSize && dataSource.length + res.list.length < res.total)
+      } else {
+        setDataSource(res.list)
+        setTotal(res.total)
+        setHasMore(res.list.length === pageSize && res.list.length < res.total)
+      }
     } catch (error) {
       message.error('获取客户列表失败')
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
 
@@ -109,8 +160,6 @@ const CustomerList: React.FC = () => {
     },
   ]
 
-  const isMobile = isH5()
-
   // 移动端卡片视图
   const renderMobileView = () => {
     return (
@@ -120,28 +169,21 @@ const CustomerList: React.FC = () => {
             placeholder="搜索客户名称"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            onPressEnter={handleSearch}
-            style={{ marginBottom: 12 }}
+            prefix={<SearchOutlined />}
             allowClear
+            style={{ marginBottom: 12 }}
+            onPressEnter={handleSearch}
           />
-          <Space style={{ width: '100%', marginBottom: 12 }} direction="vertical">
-            <Select
-              placeholder="KA客户"
-              value={isKA}
-              onChange={setIsKA}
-              style={{ width: '100%' }}
-              allowClear
-            >
-              <Select.Option value={true}>是</Select.Option>
-              <Select.Option value={false}>否</Select.Option>
-            </Select>
-            <Button type="primary" icon={<SearchOutlined />} block onClick={handleSearch}>
-              搜索
-            </Button>
-            <Button type="primary" icon={<PlusOutlined />} block onClick={() => navigate('/customer/edit')}>
-              新增客户
-            </Button>
-          </Space>
+          <Tabs
+            activeKey={activeTab}
+            onChange={(key) => setActiveTab(key as 'all' | 'ka' | 'other')}
+            items={[
+              { key: 'all', label: '全部' },
+              { key: 'ka', label: 'KA' },
+              { key: 'other', label: '其他' },
+            ]}
+            className="customer-tabs"
+          />
         </div>
 
         <div className="mobile-card-list">
@@ -151,89 +193,65 @@ const CustomerList: React.FC = () => {
               className="mobile-customer-card"
               onClick={() => navigate(`/customer/detail/${item.id}`)}
             >
-              <div className="card-header">
-                <div className="card-title">{item.name}</div>
-                {item.isKA && <Tag color="red">KA</Tag>}
-              </div>
-              <div className="card-content">
-                {item.contacts && item.contacts.length > 0 && (
-                  <div className="card-row">
-                    <span className="card-label">联系人：</span>
-                    <span className="card-value">
+              <div className="card-row-item">
+                <div className="card-main">
+                  <div className="card-title-row">
+                    <div className="card-title" title={item.name}>
+                      {item.name}
+                    </div>
+                    {item.isKA && <Tag color="red">KA</Tag>}
+                  </div>
+                  {item.contacts && item.contacts.length > 0 && (
+                    <div className="card-subtitle">
                       {item.contacts[0].name}
                       {item.contacts.length > 1 && ` 等${item.contacts.length}人`}
-                    </span>
-                  </div>
-                )}
-                {item.contacts && item.contacts.length > 0 && item.contacts[0].phone && (
-                  <div className="card-row">
-                    <span className="card-label">电话：</span>
-                    <span className="card-value">{item.contacts[0].phone}</span>
-                  </div>
-                )}
-                <div className="card-row">
-                  <span className="card-label">创建时间：</span>
-                  <span className="card-value">{formatDate(item.createTime, 'YYYY-MM-DD')}</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="card-actions">
-                <Button
-                  type="link"
-                  size="small"
-                  icon={<EyeOutlined />}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate(`/customer/detail/${item.id}`)
-                  }}
-                >
-                  详情
-                </Button>
-                <Button
-                  type="link"
-                  size="small"
-                  icon={<EditOutlined />}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate(`/customer/edit/${item.id}`)
-                  }}
-                >
-                  编辑
-                </Button>
+                <RightOutlined className="card-arrow" />
               </div>
             </Card>
           ))}
         </div>
 
-        <div className="mobile-pagination">
-          <div className="pagination-info">共 {total} 条</div>
-          <Space>
-            <Button
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-            >
-              上一页
-            </Button>
-            <span>
-              {page} / {Math.ceil(total / pageSize)}
-            </span>
-            <Button
-              disabled={page >= Math.ceil(total / pageSize)}
-              onClick={() => setPage(page + 1)}
-            >
-              下一页
-            </Button>
-          </Space>
-        </div>
+        {loadingMore && (
+          <div className="mobile-loading-more">
+            <div>加载中...</div>
+          </div>
+        )}
+
+        {!hasMore && dataSource.length > 0 && (
+          <div className="mobile-loading-more">
+            <div>没有更多了</div>
+          </div>
+        )}
+
+        {/* 底部悬浮新增按钮 */}
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          className="mobile-fab-button"
+          onClick={() => navigate('/customer/edit')}
+          shape="circle"
+          size="large"
+        />
       </div>
     )
   }
 
   return (
     <div className="customer-list-page">
-      <Card>
-        <div className="page-header">
-          <h2 className="page-title">客户列表</h2>
-          {!isMobile && (
+      {isMobile ? (
+        <>
+          <div className="page-header">
+            <h2 className="page-title">客户列表</h2>
+          </div>
+          {renderMobileView()}
+        </>
+      ) : (
+        <Card>
+          <div className="page-header">
+            <h2 className="page-title">客户列表</h2>
             <div className="page-actions">
               <Space>
                 <Input
@@ -262,12 +280,8 @@ const CustomerList: React.FC = () => {
                 </Button>
               </Space>
             </div>
-          )}
-        </div>
+          </div>
 
-        {isMobile ? (
-          renderMobileView()
-        ) : (
           <Table
             columns={columns}
             dataSource={dataSource}
@@ -286,8 +300,8 @@ const CustomerList: React.FC = () => {
             }}
             scroll={{ x: 1000 }}
           />
-        )}
-      </Card>
+        </Card>
+      )}
     </div>
   )
 }

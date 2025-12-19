@@ -6,6 +6,7 @@ import OpportunityEdit from '@/pages/Opportunity/Edit'
 import CustomerList from '@/pages/Customer/List'
 import CustomerDetail from '@/pages/Customer/Detail'
 import CustomerEdit from '@/pages/Customer/Edit'
+import Board from '@/pages/Board'
 import BoardLastWeek from '@/pages/Board/LastWeek'
 import BoardKA from '@/pages/Board/KA'
 import Permission from '@/pages/Permission'
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
       {
         path: 'customer/edit/:id?',
         element: <CustomerEdit />,
+      },
+      {
+        path: 'board',
+        element: <Board />,
       },
       {
         path: 'board/last-week',

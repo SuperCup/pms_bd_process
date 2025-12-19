@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Button, Tag, Space, Card, message, Select, Tooltip } from 'antd'
-import { PlusOutlined, EyeOutlined, EditOutlined, BellOutlined } from '@ant-design/icons'
+import { Table, Button, Tag, Space, Card, message, Tooltip, Input } from 'antd'
+import { PlusOutlined, EyeOutlined, EditOutlined, BellOutlined, SearchOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import OpportunityFilter from '@/components/OpportunityFilter'
+import OpportunityFilterMobile from '@/components/OpportunityFilterMobile'
 import { getOpportunityList } from '@/api/opportunity'
 import { getUserList } from '@/api/user'
 import { getCustomerList } from '@/api/customer'
@@ -11,7 +12,7 @@ import { useOpportunityStore } from '@/stores/opportunityStore'
 import type { Opportunity } from '@/types'
 import { formatDate, isH5, shouldShowReminder } from '@/utils'
 import dayjs from 'dayjs'
-import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS, SORT_OPTIONS } from '@/utils/constants'
+import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS } from '@/utils/constants'
 import './index.less'
 
 const OpportunityList: React.FC = () => {
@@ -22,8 +23,11 @@ const OpportunityList: React.FC = () => {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [sort, setSort] = useState('planCompleteTime_asc')
+  const [sortField, setSortField] = useState<'planCompleteTime' | 'createTime' | 'lastUpdateTime'>('planCompleteTime')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [customerOptions, setCustomerOptions] = useState<Array<{ label: string; value: string }>>([])
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [followerOptions, setFollowerOptions] = useState<Array<{ label: string; value: string }>>([])
   const [yearOptions, setYearOptions] = useState<number[]>([])
 
@@ -52,30 +56,74 @@ const OpportunityList: React.FC = () => {
   }, [])
 
   // 获取商机列表
-  const fetchList = async () => {
-    setLoading(true)
+  const fetchList = async (append = false) => {
+    if (append) {
+      setLoadingMore(true)
+    } else {
+      setLoading(true)
+    }
     try {
-      const [sortField, sortOrder] = sort.split('_')
       const params = {
         ...filter,
-        page,
+        page: append ? page + 1 : page,
         pageSize,
         sortField,
-        sortOrder: sortOrder === 'asc' ? 'asc' : 'desc',
+        sortOrder,
       }
       const res = await getOpportunityList(params)
-      setDataSource(res.list)
-      setTotal(res.total)
+      if (append) {
+        setDataSource([...dataSource, ...res.list])
+        setPage(page + 1)
+        setHasMore(res.list.length === pageSize && dataSource.length + res.list.length < res.total)
+      } else {
+        setDataSource(res.list)
+        setTotal(res.total)
+        setHasMore(res.list.length === pageSize && res.list.length < res.total)
+      }
     } catch (error) {
       message.error('获取商机列表失败')
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
 
+  const isMobile = isH5()
+
   useEffect(() => {
+    setPage(1)
+    setDataSource([])
     fetchList()
-  }, [filter, page, pageSize, sort])
+  }, [filter, sortField, sortOrder])
+
+  // 移动端无限滚动
+  useEffect(() => {
+    if (!isMobile) return
+
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      const windowHeight = window.innerHeight
+      const documentHeight = document.documentElement.scrollHeight
+
+      // 距离底部100px时加载更多
+      if (scrollTop + windowHeight >= documentHeight - 100 && hasMore && !loadingMore && !loading) {
+        fetchList(true)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isMobile, hasMore, loadingMore, loading, dataSource.length])
+
+  // 切换排序（移动端使用）
+  const handleSortChange = (field: 'planCompleteTime' | 'lastUpdateTime') => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortOrder('asc')
+    }
+  }
 
   const getImportanceTag = (importance: Opportunity['importance']) => {
     const option = IMPORTANCE_OPTIONS.find((opt) => opt.value === importance)
@@ -164,6 +212,7 @@ const OpportunityList: React.FC = () => {
       width: 150,
       render: (time) => formatDate(time, 'YYYY-MM-DD'),
       sorter: true,
+      sortOrder: sortField === 'planCompleteTime' ? (sortOrder === 'asc' ? 'ascend' : 'descend') : null,
     },
     {
       title: '状态',
@@ -185,6 +234,17 @@ const OpportunityList: React.FC = () => {
       key: 'createTime',
       width: 150,
       render: (time) => formatDate(time, 'YYYY-MM-DD'),
+      sorter: true,
+      sortOrder: sortField === 'createTime' ? (sortOrder === 'asc' ? 'ascend' : 'descend') : null,
+    },
+    {
+      title: '最近更新时间',
+      dataIndex: 'lastUpdateTime',
+      key: 'lastUpdateTime',
+      width: 150,
+      render: (time) => formatDate(time, 'YYYY-MM-DD'),
+      sorter: true,
+      sortOrder: sortField === 'lastUpdateTime' ? (sortOrder === 'asc' ? 'ascend' : 'descend') : null,
     },
     {
       title: '操作',
@@ -204,59 +264,56 @@ const OpportunityList: React.FC = () => {
     },
   ]
 
-  const isMobile = isH5()
-
   // 移动端卡片视图
   const renderMobileView = () => {
     return (
       <div className="mobile-list-view">
         <div className="mobile-list-header">
-          <Select
-            value={sort}
-            onChange={setSort}
-            style={{ width: '100%', marginBottom: 12 }}
-            options={SORT_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
-          />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            block
-            onClick={() => navigate('/opportunity/edit')}
-            style={{ marginBottom: 12 }}
-          >
-            新增商机
-          </Button>
+          <div className="mobile-search-filter-row">
+            <Input
+              placeholder="搜索事项关键词"
+              value={filter.keyword}
+              onChange={(e) => setFilter({ ...filter, keyword: e.target.value })}
+              prefix={<SearchOutlined />}
+              allowClear
+              style={{ flex: 1 }}
+              onPressEnter={() => fetchList()}
+            />
+            <OpportunityFilterMobile
+              filter={filter}
+              onFilterChange={setFilter}
+              onReset={resetFilter}
+              customerOptions={customerOptions}
+              followerOptions={followerOptions}
+              yearOptions={yearOptions}
+              sortField={sortField}
+              sortOrder={sortOrder}
+              onSortChange={handleSortChange}
+            />
+          </div>
         </div>
-
-        <OpportunityFilter
-          filter={filter}
-          onFilterChange={setFilter}
-          onReset={resetFilter}
-          customerOptions={customerOptions}
-          followerOptions={followerOptions}
-          yearOptions={yearOptions}
-        />
 
         <div className="mobile-card-list">
           {dataSource.map((item) => (
             <Card
               key={item.id}
               className="mobile-opportunity-card"
-              onClick={() => navigate(`/opportunity/detail/${item.id}`)}
             >
               <div className="card-header">
-                <div className="card-title">
-                  <Space>
-                    <span>{item.item}</span>
+                <div className="card-title-row">
+                  <div className="card-title" title={item.item}>
+                    {item.item}
+                  </div>
+                  <div className="card-tags">
                     {getReminderTag(item)}
-                  </Space>
-                </div>
-                <div className="card-tags">
-                  {getImportanceTag(item.importance)}
-                  {getStatusTag(item.status)}
+                  </div>
                 </div>
               </div>
               <div className="card-content">
+                <div className="card-tags-row">
+                  {getImportanceTag(item.importance)}
+                  {getStatusTag(item.status)}
+                </div>
                 <div className="card-row">
                   <span className="card-label">客户：</span>
                   <span className="card-value">{item.customer.name}</span>
@@ -282,15 +339,12 @@ const OpportunityList: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="card-actions">
+              <div className="card-actions-bottom">
                 <Button
                   type="link"
                   size="small"
                   icon={<EyeOutlined />}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate(`/opportunity/detail/${item.id}`)
-                  }}
+                  onClick={() => navigate(`/opportunity/detail/${item.id}`)}
                 >
                   详情
                 </Button>
@@ -298,10 +352,7 @@ const OpportunityList: React.FC = () => {
                   type="link"
                   size="small"
                   icon={<EditOutlined />}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate(`/opportunity/edit/${item.id}`)
-                  }}
+                  onClick={() => navigate(`/opportunity/edit/${item.id}`)}
                 >
                   编辑
                 </Button>
@@ -310,86 +361,88 @@ const OpportunityList: React.FC = () => {
           ))}
         </div>
 
-        <div className="mobile-pagination">
-          <div className="pagination-info">共 {total} 条</div>
-          <Space>
-            <Button
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-            >
-              上一页
-            </Button>
-            <span>
-              {page} / {Math.ceil(total / pageSize)}
-            </span>
-            <Button
-              disabled={page >= Math.ceil(total / pageSize)}
-              onClick={() => setPage(page + 1)}
-            >
-              下一页
-            </Button>
-          </Space>
-        </div>
+        {loadingMore && (
+          <div className="mobile-loading-more">
+            <div>加载中...</div>
+          </div>
+        )}
+
+        {!hasMore && dataSource.length > 0 && (
+          <div className="mobile-loading-more">
+            <div>没有更多了</div>
+          </div>
+        )}
+
+        {/* 底部悬浮新增按钮 */}
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          className="mobile-fab-button"
+          onClick={() => navigate('/opportunity/edit')}
+          shape="circle"
+          size="large"
+        />
       </div>
     )
   }
 
   return (
     <div className="opportunity-list-page">
-      <Card>
-        <div className="page-header">
-          <h2 className="page-title">商机列表</h2>
-          {!isMobile && (
+      {isMobile ? (
+        <>
+          <div className="page-header">
+            <h2 className="page-title">商机列表</h2>
+          </div>
+          {renderMobileView()}
+        </>
+      ) : (
+        <Card>
+          <div className="page-header">
+            <h2 className="page-title">商机列表</h2>
             <div className="page-actions">
-              <Space>
-                <Select
-                  value={sort}
-                  onChange={setSort}
-                  style={{ width: 200 }}
-                  options={SORT_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
-                />
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/opportunity/edit')}>
-                  新增商机
-                </Button>
-              </Space>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/opportunity/edit')}>
+                新增商机
+              </Button>
             </div>
-          )}
-        </div>
+          </div>
 
-        {isMobile ? (
-          renderMobileView()
-        ) : (
-          <>
-            <OpportunityFilter
-              filter={filter}
-              onFilterChange={setFilter}
-              onReset={resetFilter}
-              customerOptions={customerOptions}
-              followerOptions={followerOptions}
-              yearOptions={yearOptions}
-            />
+          <OpportunityFilter
+            filter={filter}
+            onFilterChange={setFilter}
+            onReset={resetFilter}
+            customerOptions={customerOptions}
+            followerOptions={followerOptions}
+            yearOptions={yearOptions}
+          />
 
-            <Table
-              columns={columns}
-              dataSource={dataSource}
-              loading={loading}
-              rowKey="id"
-              pagination={{
-                current: page,
-                pageSize,
-                total,
-                showSizeChanger: true,
-                showTotal: (total) => `共 ${total} 条`,
-                onChange: (page, pageSize) => {
-                  setPage(page)
-                  setPageSize(pageSize)
-                },
+          <Table
+            columns={columns}
+            dataSource={dataSource}
+            loading={loading}
+            rowKey="id"
+              onChange={(_, __, sorter: any) => {
+                if (sorter && sorter.field) {
+                  const order = sorter.order === 'ascend' ? 'asc' : 'desc'
+                  const field = sorter.field as 'planCompleteTime' | 'createTime' | 'lastUpdateTime'
+                  setSortField(field)
+                  setSortOrder(order)
+                }
               }}
-              scroll={{ x: 1500 }}
-            />
-          </>
-        )}
-      </Card>
+            pagination={{
+              current: page,
+              pageSize,
+              total,
+              showSizeChanger: true,
+              showTotal: (total) => `共 ${total} 条`,
+              onChange: (page, pageSize) => {
+                setPage(page)
+                setPageSize(pageSize)
+              },
+            }}
+            scroll={{ x: 1500 }}
+          />
+        </Card>
+      )}
     </div>
   )
 }

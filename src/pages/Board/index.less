@@ -1,0 +1,59 @@
+.board-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  :global {
+    .ant-tabs {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      .ant-tabs-content-holder {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .ant-tabs-content {
+        height: 100%;
+      }
+
+      .ant-tabs-tabpane {
+        height: 100%;
+      }
+    }
+  }
+
+  &.mobile-tabs {
+    :global {
+      .ant-tabs-nav {
+        margin: 0;
+        padding: 0 16px;
+        background: #fff;
+      }
+
+      .ant-tabs-tab {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .board-page {
+    :global {
+      .ant-tabs-nav {
+        margin: 0;
+        padding: 0 16px;
+        background: #fff;
+      }
+
+      .ant-tabs-tab {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+  }
+}
+

@@ -1,4 +1,32 @@
 .customer-edit-page {
+  :global {
+    .ant-card-head-title {
+      width: 100%;
+    }
+  }
+
+  .card-title-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    .back-button {
+      flex-shrink: 0;
+    }
+
+    .card-title-text {
+      flex: 1;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .card-title-placeholder {
+      width: 60px;
+      flex-shrink: 0;
+    }
+  }
+
   .ant-form-item {
     margin-bottom: 24px;
   }

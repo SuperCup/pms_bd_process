@@ -1,4 +1,32 @@
 .opportunity-detail-page {
+  :global {
+    .ant-card-head-title {
+      width: 100%;
+    }
+  }
+
+  .card-title-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    .back-button {
+      flex-shrink: 0;
+    }
+
+    .card-title-text {
+      flex: 1;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .card-title-placeholder {
+      width: 60px;
+      flex-shrink: 0;
+    }
+  }
+
   .progress-section {
     margin-top: 24px;
     padding-top: 24px;
@@ -46,22 +74,112 @@
 @media screen and (max-width: 768px) {
   .opportunity-detail-page {
     :global {
-      .ant-descriptions-item-label {
-        min-width: 90px !important;
+      .ant-card {
+        border: none;
+        box-shadow: none;
+      }
+
+      .ant-card-head {
+        padding: 0 12px;
+        border-bottom: 1px solid #f0f0f0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: #fff;
+      }
+
+      .ant-card-body {
+        padding: 12px !important;
+      }
+
+      .ant-form-item {
+        margin-bottom: 16px !important;
+      }
+
+      .ant-form-item-label {
+        padding-bottom: 4px !important;
+        font-size: 14px;
+      }
+
+      .ant-form-item-label > label {
+        font-size: 14px;
+        color: #333;
+      }
+
+      .ant-input,
+      .ant-select-selector,
+      .ant-picker {
+        font-size: 16px !important;
+      }
+
+      .ant-timeline-item {
+        padding-bottom: 12px !important;
+      }
+    }
+
+    .readonly-info-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+
+      .info-item {
+        display: flex;
+        margin-bottom: 8px;
+        font-size: 14px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        .info-label {
+          color: #8c8c8c;
+          min-width: 100px;
+          flex-shrink: 0;
+        }
+
+        .info-value {
+          color: #333;
+          flex: 1;
+        }
       }
     }
 
     .progress-section {
-      margin-top: 16px;
-      padding-top: 16px;
+      margin-top: 12px;
+      padding-top: 12px;
 
       .section-header {
-        margin-bottom: 12px;
+        margin-bottom: 8px;
 
         h3 {
           font-size: 14px;
+          margin: 0;
         }
       }
+
+      .progress-item {
+        .progress-content {
+          margin-bottom: 4px;
+          font-size: 14px;
+        }
+
+        .progress-meta {
+          font-size: 12px;
+          gap: 8px;
+        }
+      }
+    }
+
+    .mobile-fixed-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 15px;
+      background: #fff;
+      border-top: 1px solid #f0f0f0;
+      z-index: 999;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
     }
   }
 }

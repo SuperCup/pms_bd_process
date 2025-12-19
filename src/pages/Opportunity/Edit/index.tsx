@@ -109,12 +109,13 @@ const OpportunityEdit: React.FC = () => {
       <Card
         loading={loading}
         title={
-          <Space>
-            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+          <div className="card-title-wrapper">
+            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-button">
               {isMobile ? '' : '返回'}
             </Button>
-            <span>{isEdit ? '编辑商机' : '新增商机'}</span>
-          </Space>
+            <span className="card-title-text">{isEdit ? '编辑商机' : '新增商机'}</span>
+            <div className="card-title-placeholder" />
+          </div>
         }
       >
         <Form form={form} onFinish={handleSubmit} layout="vertical" initialValues={{ status: 'in-progress' }}>

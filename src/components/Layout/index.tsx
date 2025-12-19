@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { Layout as AntLayout, Menu, Drawer, Button } from 'antd'
+import { Layout as AntLayout, Menu, Button } from 'antd'
 import type { MenuProps } from 'antd'
 import {
   MenuFoldOutlined,
@@ -39,7 +39,6 @@ const menuItems: MenuProps['items'] = [
 
 const Layout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false)
-  const [drawerVisible, setDrawerVisible] = useState(false)
   // 初始值使用函数形式，确保在客户端正确检测
   const [isMobileDevice, setIsMobileDevice] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -78,12 +77,17 @@ const Layout: React.FC = () => {
 
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
     navigate(key)
-    if (isMobileDevice) {
-      setDrawerVisible(false)
-    }
   }
 
-  const selectedKeys = [location.pathname]
+  // 匹配底部导航的选中状态
+  const getSelectedKey = () => {
+    const path = location.pathname
+    if (path.startsWith('/board')) return '/board'
+    if (path.startsWith('/opportunity')) return '/opportunity/list'
+    if (path.startsWith('/customer')) return '/customer/list'
+    return path
+  }
+  const selectedKeys = [getSelectedKey()]
 
   const menuContent = (
     <Menu
@@ -97,7 +101,7 @@ const Layout: React.FC = () => {
 
   // 移动端底部导航项
   const bottomNavItems = [
-    { key: '/board/last-week', icon: <DashboardOutlined />, label: '看板' },
+    { key: '/board', icon: <DashboardOutlined />, label: '看板' },
     { key: '/opportunity/list', icon: <ShoppingOutlined />, label: '商机' },
     { key: '/customer/list', icon: <TeamOutlined />, label: '客户' },
   ]
@@ -106,27 +110,14 @@ const Layout: React.FC = () => {
     navigate(key)
   }
 
+  // 判断是否应该显示底部导航栏（详情页和编辑页不显示）
+  const shouldShowBottomNav = isMobileDevice && 
+    !location.pathname.includes('/detail/') && 
+    !location.pathname.includes('/edit')
+
   return (
     <AntLayout className="app-layout" style={{ minHeight: '100vh' }}>
-      {isMobileDevice ? (
-        <>
-          <Drawer
-            title="菜单"
-            placement="left"
-            onClose={() => setDrawerVisible(false)}
-            open={drawerVisible}
-            bodyStyle={{ padding: 0 }}
-          >
-            {menuContent}
-          </Drawer>
-          <Button
-            type="primary"
-            icon={<MenuFoldOutlined />}
-            onClick={() => setDrawerVisible(true)}
-            className="mobile-menu-button"
-          />
-        </>
-      ) : (
+      {!isMobileDevice && (
         <Sider trigger={null} collapsible collapsed={collapsed} width={200}>
           {menuContent}
           <Button
@@ -144,13 +135,13 @@ const Layout: React.FC = () => {
       )}
 
       <AntLayout>
-        <Content className={`app-content ${isMobileDevice ? 'mobile-content' : ''}`}>
+        <Content className={`app-content ${isMobileDevice ? 'mobile-content' : ''} ${isMobileDevice && location.pathname.includes('/detail/') ? 'detail-page' : ''}`}>
           <Outlet />
         </Content>
       </AntLayout>
 
       {/* 移动端底部导航栏 */}
-      {isMobileDevice && (
+      {shouldShowBottomNav && (
         <div className="mobile-bottom-nav">
           {bottomNavItems.map((item) => (
             <div

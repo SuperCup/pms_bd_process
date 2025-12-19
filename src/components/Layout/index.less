@@ -21,11 +21,16 @@
     border-radius: 4px;
     
     &.mobile-content {
-      margin: 0;
-      padding: 12px;
+      margin: 0 15px;
+      padding: 12px 0;
       min-height: calc(100vh - 60px);
       border-radius: 0;
       padding-bottom: 80px; // 为底部导航栏留出空间
+
+      // 商机详情页需要为固定按钮留出空间
+      &.detail-page {
+        padding-bottom: 140px;
+      }
     }
   }
 

@@ -4,7 +4,7 @@ import { Table, Empty, Spin, Tag, Avatar } from 'antd'
 import { DownOutlined, RightOutlined } from '@ant-design/icons'
 import { getKAOpportunities } from '@/api/opportunity'
 import type { Opportunity } from '@/types'
-import { formatDate } from '@/utils'
+import { formatDate, isH5 } from '@/utils'
 import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS } from '@/utils/constants'
 import type { ColumnsType } from 'antd/es/table'
 import './index.less'
@@ -218,51 +218,106 @@ const BoardKA: React.FC = () => {
     },
   ]
 
-  return (
-    <div className="board-ka-page">
-      <div className="page-header">
-        <h2 className="page-title">KA客户事项看板</h2>
-      </div>
+  const isMobile = isH5()
 
-      <div className="board-content">
+  // 移动端视图
+  const renderMobileView = () => {
+    return (
+      <div className="mobile-board-content">
         {customerNames.map((customerName) => {
-          const isExpanded = expandedRows.has(customerName)
           const opportunities = groupedData[customerName]
-
           return (
-            <div key={customerName} className="customer-group">
-              <div
-                className="group-header"
-                onClick={() => toggleRow(customerName)}
-              >
-                <div className="group-title">
-                  {isExpanded ? <DownOutlined /> : <RightOutlined />}
-                  <Tag color={getCustomerTagColor(customerName)}>{customerName}</Tag>
-                </div>
+            <div key={customerName} className="mobile-customer-section">
+              <div className="mobile-section-header">
+                <Tag color={getCustomerTagColor(customerName)}>{customerName}</Tag>
               </div>
-
-              {isExpanded && (
-                <>
-                  <Table
-                    columns={createColumns(customerName)}
-                    dataSource={opportunities.map((item) => ({
-                      ...item,
-                      key: item.id,
-                    }))}
-                    pagination={false}
-                    size="small"
-                    className="ka-table"
-                    onRow={(record) => ({
-                      onClick: () => navigate(`/opportunity/detail/${record.id}`),
-                      style: { cursor: 'pointer' },
-                    })}
-                  />
-                </>
-              )}
+              <div className="mobile-opportunity-list">
+                {opportunities.map((item) => (
+                  <div
+                    key={item.id}
+                    className="mobile-opportunity-item"
+                    onClick={() => navigate(`/opportunity/detail/${item.id}`)}
+                  >
+                    <div className="item-name">{item.item}</div>
+                    <div className="item-info">
+                      <div className="info-row">
+                        <span className="info-label">计划完成时间：</span>
+                        <span className="info-value">{formatDate(item.planCompleteTime, 'YYYY-MM-DD')}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-label">重要程度：</span>
+                        <span className="info-value">{getImportanceTag(item.importance)}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-label">类型：</span>
+                        <span className="info-value">{getTypeTag(item.type)}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-label">跟进人：</span>
+                        <span className="info-value">{item.follower.name}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )
         })}
       </div>
+    )
+  }
+
+  return (
+    <div className="board-ka-page">
+      {!isMobile && (
+        <div className="page-header">
+          <h2 className="page-title">KA客户事项看板</h2>
+        </div>
+      )}
+
+      {isMobile ? (
+        renderMobileView()
+      ) : (
+        <div className="board-content">
+          {customerNames.map((customerName) => {
+            const isExpanded = expandedRows.has(customerName)
+            const opportunities = groupedData[customerName]
+
+            return (
+              <div key={customerName} className="customer-group">
+                <div
+                  className="group-header"
+                  onClick={() => toggleRow(customerName)}
+                >
+                  <div className="group-title">
+                    {isExpanded ? <DownOutlined /> : <RightOutlined />}
+                    <Tag color={getCustomerTagColor(customerName)}>{customerName}</Tag>
+                  </div>
+                </div>
+
+                {isExpanded && (
+                  <>
+                    <Table
+                      columns={createColumns(customerName)}
+                      dataSource={opportunities.map((item) => ({
+                        ...item,
+                        key: item.id,
+                      }))}
+                      pagination={false}
+                      size="small"
+                      className="ka-table"
+                      onRow={(record) => ({
+                        onClick: () => navigate(`/opportunity/detail/${record.id}`),
+                        style: { cursor: 'pointer' },
+                      })}
+                    />
+                  </>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

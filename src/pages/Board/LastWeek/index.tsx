@@ -4,7 +4,7 @@ import { Card, Empty, Spin, Tag } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
 import { getLastWeekOpportunities } from '@/api/opportunity'
 import type { Opportunity } from '@/types'
-import { formatDate } from '@/utils'
+import { formatDate, isH5 } from '@/utils'
 import { IMPORTANCE_OPTIONS } from '@/utils/constants'
 import './index.less'
 
@@ -80,11 +80,15 @@ const BoardLastWeek: React.FC = () => {
     return <Empty description="暂无上周新增商机" />
   }
 
+  const isMobile = isH5()
+
   return (
     <div className="board-last-week-page">
-      <div className="page-header">
-        <h2 className="page-title">上周新增商机看板</h2>
-      </div>
+      {!isMobile && (
+        <div className="page-header">
+          <h2 className="page-title">上周新增商机看板</h2>
+        </div>
+      )}
 
       <div className="board-content">
         {followerNames.map((followerName) => (

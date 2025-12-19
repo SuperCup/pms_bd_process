@@ -47,10 +47,19 @@ body {
 @media screen and (max-width: 768px) {
   html {
     font-size: 14px;
+    -webkit-text-size-adjust: 100%; // 防止iOS自动调整字体大小
   }
 
   body {
     font-size: 14px;
+    overflow-x: hidden; // 防止横向滚动
+    width: 100%;
+    position: relative;
+  }
+
+  #root {
+    width: 100%;
+    overflow-x: hidden;
   }
 
   .page-container {

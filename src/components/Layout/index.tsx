@@ -40,9 +40,35 @@ const menuItems: MenuProps['items'] = [
 const Layout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false)
   const [drawerVisible, setDrawerVisible] = useState(false)
+  // 初始值使用函数形式，确保在客户端正确检测
+  const [isMobileDevice, setIsMobileDevice] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return isH5()
+    }
+    return false
+  })
   const navigate = useNavigate()
   const location = useLocation()
-  const isMobileDevice = isH5()
+
+  // 检测移动端并监听窗口大小变化
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileDevice(isH5())
+    }
+    
+    // 初始检测（延迟一帧确保DOM已渲染）
+    const timer = setTimeout(() => {
+      checkMobile()
+    }, 0)
+    
+    // 监听窗口大小变化
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   useEffect(() => {
     if (isMobileDevice) {

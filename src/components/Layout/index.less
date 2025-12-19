@@ -95,13 +95,38 @@
   }
 }
 
-// H5适配
+// H5适配 - 使用媒体查询作为CSS层面的兜底
 @media screen and (max-width: 768px) {
   .app-layout {
     .app-content {
-      margin: 12px;
-      padding: 16px;
-      min-height: calc(100vh - 24px);
+      margin: 0 !important;
+      padding: 12px !important;
+      min-height: calc(100vh - 60px) !important;
+      border-radius: 0 !important;
+      padding-bottom: 80px !important; // 为底部导航栏留出空间
+    }
+
+    // 确保移动端显示底部导航栏
+    .mobile-bottom-nav {
+      display: flex !important;
+    }
+
+    // 确保桌面端侧边栏在移动端隐藏
+    .ant-layout-sider {
+      display: none !important;
+    }
+  }
+}
+
+// 桌面端确保底部导航栏隐藏
+@media screen and (min-width: 769px) {
+  .app-layout {
+    .mobile-bottom-nav {
+      display: none !important;
+    }
+
+    .mobile-menu-button {
+      display: none !important;
     }
   }
 }

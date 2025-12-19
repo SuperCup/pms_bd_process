@@ -22,9 +22,15 @@ export const getLastWeekRange = (): { start: string; end: string } => {
   }
 }
 
-// 判断是否为移动端
+// 判断是否为移动端（结合 userAgent 和屏幕宽度）
 export const isMobile = (): boolean => {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  // 检查 userAgent
+  const uaMatch = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  
+  // 检查屏幕宽度（移动端通常小于 768px）
+  const isSmallScreen = typeof window !== 'undefined' && window.innerWidth <= 768
+  
+  return uaMatch || isSmallScreen
 }
 
 // 判断是否在企微环境

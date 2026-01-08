@@ -131,7 +131,7 @@ const OptionConfigModal: React.FC<OptionConfigModalProps> = ({ open, onClose, on
         dataIndex: 'label',
         key: 'label',
         width: '40%',
-        render: (text, record, index) => {
+        render: (text, _record, index) => {
           if (editingItem?.type === type && editingItem?.index === index) {
             return (
               <Form.Item
@@ -151,7 +151,7 @@ const OptionConfigModal: React.FC<OptionConfigModalProps> = ({ open, onClose, on
         dataIndex: 'value',
         key: 'value',
         width: '40%',
-        render: (text, record, index) => {
+        render: (_text, _record, index) => {
           if (editingItem?.type === type && editingItem?.index === index) {
             return (
               <Form.Item
@@ -172,7 +172,7 @@ const OptionConfigModal: React.FC<OptionConfigModalProps> = ({ open, onClose, on
         title: '操作',
         key: 'action',
         width: '20%',
-        render: (_, record, index) => {
+        render: (_text, _record, index) => {
           if (editingItem?.type === type && editingItem?.index === index) {
             return (
               <Space>
@@ -234,7 +234,7 @@ const OptionConfigModal: React.FC<OptionConfigModalProps> = ({ open, onClose, on
           <Table
             columns={columns}
             dataSource={config[type]}
-            rowKey={(record, index) => `${type}-${index}`}
+            rowKey={(_record, index) => `${type}-${index}`}
             pagination={false}
             size="small"
           />

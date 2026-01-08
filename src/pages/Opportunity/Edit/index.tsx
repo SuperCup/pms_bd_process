@@ -6,9 +6,9 @@ import dayjs from 'dayjs'
 import { getOpportunityDetail, createOpportunity, updateOpportunity } from '@/api/opportunity'
 import { getCustomerList } from '@/api/customer'
 import { getUserList } from '@/api/user'
-import { useOptionConfig } from '@/hooks/useOptionConfig'
 import type { Opportunity, Customer, User } from '@/types'
 import { formatDate, isH5 } from '@/utils'
+import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS } from '@/utils/constants'
 import './index.less'
 
 const { TextArea } = Input
@@ -21,7 +21,6 @@ const OpportunityEdit: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [customerOptions, setCustomerOptions] = useState<Customer[]>([])
   const [followerOptions, setFollowerOptions] = useState<User[]>([])
-  const { config: optionConfig } = useOptionConfig()
 
   const isEdit = !!id
 
@@ -172,7 +171,7 @@ const OpportunityEdit: React.FC = () => {
             rules={[{ required: true, message: '请选择重要程度' }]}
           >
             <Select placeholder="请选择重要程度">
-              {IMPORTANCE_OPTIONS.map((opt) => (
+              {IMPORTANCE_OPTIONS.map((opt: { label: string; value: string }) => (
                 <Option key={opt.value} value={opt.value}>
                   {opt.label}
                 </Option>
@@ -186,7 +185,7 @@ const OpportunityEdit: React.FC = () => {
             rules={[{ required: true, message: '请选择类型' }]}
           >
             <Select placeholder="请选择类型">
-              {TYPE_OPTIONS.map((opt) => (
+              {TYPE_OPTIONS.map((opt: { label: string; value: string }) => (
                 <Option key={opt.value} value={opt.value}>
                   {opt.label}
                 </Option>
@@ -218,7 +217,7 @@ const OpportunityEdit: React.FC = () => {
 
           <Form.Item name="status" label="状态">
             <Select placeholder="请选择状态">
-              {STATUS_OPTIONS.map((opt) => (
+              {STATUS_OPTIONS.map((opt: { label: string; value: string }) => (
                 <Option key={opt.value} value={opt.value}>
                   {opt.label}
                 </Option>

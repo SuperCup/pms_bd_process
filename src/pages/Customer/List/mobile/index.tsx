@@ -11,7 +11,7 @@ const CustomerListMobile: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [dataSource, setDataSource] = useState<Customer[]>([])
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize] = useState(10)
   const [keyword, setKeyword] = useState('')
   const [isKA, setIsKA] = useState<boolean | undefined>(undefined)
   const [activeTab, setActiveTab] = useState<'all' | 'ka' | 'other'>('all')

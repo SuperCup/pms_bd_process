@@ -8,7 +8,6 @@ import { getKAFilterConfig, saveKAFilterConfig, type KAFilterConfig } from '@/ap
 import type { Opportunity, Customer } from '@/types'
 import { formatDate, isH5 } from '@/utils'
 import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS } from '@/utils/constants'
-import { useUserStore } from '@/stores/userStore'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import BoardKAMobile from './mobile'
@@ -22,7 +21,6 @@ type FilterConfig = KAFilterConfig
 
 const BoardKA: React.FC = () => {
   const navigate = useNavigate()
-  const { user } = useUserStore()
   const [loading, setLoading] = useState(false)
   const [groupedData, setGroupedData] = useState<Record<string, Opportunity[]>>({})
   const [allGroupedData, setAllGroupedData] = useState<Record<string, Opportunity[]>>({})

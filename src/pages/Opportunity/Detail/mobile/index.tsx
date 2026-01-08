@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useBlocker } from 'react-router-dom'
-import { Card, Tag, Button, Timeline, Space, message, Modal, Input, Form, Select, DatePicker } from 'antd'
+import { Card, Button, Timeline, Space, message, Modal, Input, Form, Select, DatePicker } from 'antd'
 import { ArrowLeftOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
 import { getOpportunityDetail, addProgressRecord, getProgressRecords, updateOpportunity } from '@/api/opportunity'
 import { getCustomerList } from '@/api/customer'

@@ -9,7 +9,6 @@ import { getCustomerList } from '@/api/customer'
 import { useOpportunityStore } from '@/stores/opportunityStore'
 import type { Opportunity } from '@/types'
 import { formatDate, shouldShowReminder } from '@/utils'
-import dayjs from 'dayjs'
 import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS } from '@/utils/constants'
 import '../index.less'
 
@@ -19,7 +18,7 @@ const OpportunityListMobile: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [dataSource, setDataSource] = useState<Opportunity[]>([])
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize] = useState(10)
   const [sortField, setSortField] = useState<'planCompleteTime' | 'createTime' | 'lastUpdateTime'>('planCompleteTime')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [customerOptions, setCustomerOptions] = useState<Array<{ label: string; value: string }>>([])
@@ -140,11 +139,6 @@ const OpportunityListMobile: React.FC = () => {
     if (!shouldShowReminder(opportunity.planCompleteTime)) {
       return null
     }
-    const days = dayjs(opportunity.planCompleteTime).diff(dayjs().startOf('day'), 'day')
-    const message = days === 0 
-      ? '今天到期，请及时更新跟进情况' 
-      : `距离计划完成时间还有${days}天，系统每天会推送企微消息提醒`
-    
     return (
       <Tag color="orange" icon={<BellOutlined />}>
         提醒中

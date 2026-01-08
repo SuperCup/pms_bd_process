@@ -33,6 +33,9 @@ export interface CustomerContact {
   remark?: string // 备注
 }
 
+// 客户类型
+export type CustomerType = 'key' | 'silent' | 'new' // 重点客户、沉默客户、新客户
+
 // 客户相关类型
 export interface Customer {
   id: string
@@ -42,6 +45,8 @@ export interface Customer {
   pmsCustomer?: PMSCustomer // PMS客户（关联）
   contacts?: CustomerContact[] // 联系人列表
   address?: string // 地址
+  follower?: User // 跟进人
+  customerType?: CustomerType // 客户类型：重点客户、沉默客户、新客户
   createTime: string
   updateTime: string
 }

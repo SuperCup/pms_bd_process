@@ -3,4 +3,6 @@ export * from './opportunity'
 export * from './customer'
 export * from './user'
 export * from './permission'
+export * from './kaFilter'
+export * from './optionConfig'
 

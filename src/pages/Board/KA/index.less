@@ -8,7 +8,10 @@
     padding: 16px 24px;
     background: #fff;
     border-bottom: 1px solid #f0f0f0;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
 
     .page-title {
       font-size: 18px;
@@ -49,6 +52,20 @@
           gap: 8px;
           font-size: 14px;
           font-weight: 500;
+          flex: 1;
+
+          .group-stats {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-left: 16px;
+            font-size: 13px;
+            color: #666;
+
+            .stat-item {
+              white-space: nowrap;
+            }
+          }
         }
       }
 

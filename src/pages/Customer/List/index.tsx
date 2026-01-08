@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Button, Input, Select, Tag, Space, Card, message, Tabs } from 'antd'
-import { PlusOutlined, EyeOutlined, EditOutlined, RightOutlined, SearchOutlined } from '@ant-design/icons'
+import { Table, Button, Input, Select, Tag, Space, Card, message } from 'antd'
+import { PlusOutlined, EyeOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { getCustomerList } from '@/api/customer'
 import type { Customer } from '@/types'
 import { formatDate, isH5 } from '@/utils'
+import CustomerListMobile from './mobile'
 import './index.less'
 
 const CustomerList: React.FC = () => {
@@ -17,59 +18,19 @@ const CustomerList: React.FC = () => {
   const [pageSize, setPageSize] = useState(10)
   const [keyword, setKeyword] = useState('')
   const [isKA, setIsKA] = useState<boolean | undefined>(undefined)
-  const [activeTab, setActiveTab] = useState<'all' | 'ka' | 'other'>('all')
-  const [hasMore, setHasMore] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
 
   const isMobile = isH5()
 
   useEffect(() => {
     setPage(1)
-    setDataSource([])
     fetchList()
   }, [keyword, isKA])
 
-  // 移动端无限滚动
-  useEffect(() => {
-    if (!isMobile) return
-
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      const windowHeight = window.innerHeight
-      const documentHeight = document.documentElement.scrollHeight
-
-      // 距离底部100px时加载更多
-      if (scrollTop + windowHeight >= documentHeight - 100 && hasMore && !loadingMore && !loading) {
-        fetchList(true)
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [isMobile, hasMore, loadingMore, loading, dataSource.length])
-
-  // 移动端tab切换
-  useEffect(() => {
-    if (isH5()) {
-      if (activeTab === 'ka') {
-        setIsKA(true)
-      } else if (activeTab === 'other') {
-        setIsKA(false)
-      } else {
-        setIsKA(undefined)
-      }
-    }
-  }, [activeTab])
-
-  const fetchList = async (append = false) => {
-    if (append) {
-      setLoadingMore(true)
-    } else {
-      setLoading(true)
-    }
+  const fetchList = async () => {
+    setLoading(true)
     try {
       const params: any = {
-        page: append ? page + 1 : page,
+        page,
         pageSize,
       }
       if (keyword) {
@@ -79,26 +40,29 @@ const CustomerList: React.FC = () => {
         params.isKA = isKA
       }
       const res = await getCustomerList(params)
-      if (append) {
-        setDataSource([...dataSource, ...res.list])
-        setPage(page + 1)
-        setHasMore(res.list.length === pageSize && dataSource.length + res.list.length < res.total)
-      } else {
-        setDataSource(res.list)
-        setTotal(res.total)
-        setHasMore(res.list.length === pageSize && res.list.length < res.total)
-      }
+      setDataSource(res.list)
+      setTotal(res.total)
     } catch (error) {
       message.error('获取客户列表失败')
     } finally {
       setLoading(false)
-      setLoadingMore(false)
     }
   }
 
   const handleSearch = () => {
     setPage(1)
     fetchList()
+  }
+
+  const getCustomerTypeTag = (type?: string) => {
+    if (!type) return '-'
+    const typeMap: Record<string, { label: string; color: string }> = {
+      'key': { label: '重点客户', color: 'red' },
+      'silent': { label: '沉默客户', color: 'orange' },
+      'new': { label: '新客户', color: 'green' },
+    }
+    const typeInfo = typeMap[type]
+    return typeInfo ? <Tag color={typeInfo.color}>{typeInfo.label}</Tag> : '-'
   }
 
   const columns: ColumnsType<Customer> = [
@@ -116,24 +80,18 @@ const CustomerList: React.FC = () => {
       render: (isKA) => (isKA ? <Tag color="red">KA</Tag> : '-'),
     },
     {
-      title: '联系人',
-      dataIndex: 'contacts',
-      key: 'contacts',
+      title: '跟进人',
+      dataIndex: ['follower', 'name'],
+      key: 'follower',
       width: 120,
-      render: (contacts) => {
-        if (!contacts || contacts.length === 0) return '-'
-        return contacts[0].name + (contacts.length > 1 ? ` 等${contacts.length}人` : '')
-      },
+      render: (name) => name || '-',
     },
     {
-      title: '电话',
-      dataIndex: 'contacts',
-      key: 'phone',
-      width: 150,
-      render: (contacts) => {
-        if (!contacts || contacts.length === 0 || !contacts[0].phone) return '-'
-        return contacts[0].phone
-      },
+      title: '客户类型',
+      dataIndex: 'customerType',
+      key: 'customerType',
+      width: 120,
+      render: (type) => getCustomerTypeTag(type),
     },
     {
       title: '创建时间',
@@ -160,95 +118,12 @@ const CustomerList: React.FC = () => {
     },
   ]
 
-  // 移动端卡片视图
-  const renderMobileView = () => {
-    return (
-      <div className="mobile-list-view">
-        <div className="mobile-list-header">
-          <Input
-            placeholder="搜索客户名称"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            prefix={<SearchOutlined />}
-            allowClear
-            style={{ marginBottom: 12 }}
-            onPressEnter={handleSearch}
-          />
-          <Tabs
-            activeKey={activeTab}
-            onChange={(key) => setActiveTab(key as 'all' | 'ka' | 'other')}
-            items={[
-              { key: 'all', label: '全部' },
-              { key: 'ka', label: 'KA' },
-              { key: 'other', label: '其他' },
-            ]}
-            className="customer-tabs"
-          />
-        </div>
-
-        <div className="mobile-card-list">
-          {dataSource.map((item) => (
-            <Card
-              key={item.id}
-              className="mobile-customer-card"
-              onClick={() => navigate(`/customer/detail/${item.id}`)}
-            >
-              <div className="card-row-item">
-                <div className="card-main">
-                  <div className="card-title-row">
-                    <div className="card-title" title={item.name}>
-                      {item.name}
-                    </div>
-                    {item.isKA && <Tag color="red">KA</Tag>}
-                  </div>
-                  {item.contacts && item.contacts.length > 0 && (
-                    <div className="card-subtitle">
-                      {item.contacts[0].name}
-                      {item.contacts.length > 1 && ` 等${item.contacts.length}人`}
-                    </div>
-                  )}
-                </div>
-                <RightOutlined className="card-arrow" />
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {loadingMore && (
-          <div className="mobile-loading-more">
-            <div>加载中...</div>
-          </div>
-        )}
-
-        {!hasMore && dataSource.length > 0 && (
-          <div className="mobile-loading-more">
-            <div>没有更多了</div>
-          </div>
-        )}
-
-        {/* 底部悬浮新增按钮 */}
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          className="mobile-fab-button"
-          onClick={() => navigate('/customer/edit')}
-          shape="circle"
-          size="large"
-        />
-      </div>
-    )
+  if (isMobile) {
+    return <CustomerListMobile />
   }
 
   return (
     <div className="customer-list-page">
-      {isMobile ? (
-        <>
-          <div className="page-header">
-            <h2 className="page-title">客户列表</h2>
-          </div>
-          {renderMobileView()}
-        </>
-      ) : (
         <Card>
           <div className="page-header">
             <h2 className="page-title">客户列表</h2>
@@ -301,7 +176,6 @@ const CustomerList: React.FC = () => {
             scroll={{ x: 1000 }}
           />
         </Card>
-      )}
     </div>
   )
 }

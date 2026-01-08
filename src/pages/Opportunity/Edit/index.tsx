@@ -6,8 +6,8 @@ import dayjs from 'dayjs'
 import { getOpportunityDetail, createOpportunity, updateOpportunity } from '@/api/opportunity'
 import { getCustomerList } from '@/api/customer'
 import { getUserList } from '@/api/user'
+import { useOptionConfig } from '@/hooks/useOptionConfig'
 import type { Opportunity, Customer, User } from '@/types'
-import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS } from '@/utils/constants'
 import { formatDate, isH5 } from '@/utils'
 import './index.less'
 
@@ -21,6 +21,7 @@ const OpportunityEdit: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [customerOptions, setCustomerOptions] = useState<Customer[]>([])
   const [followerOptions, setFollowerOptions] = useState<User[]>([])
+  const { config: optionConfig } = useOptionConfig()
 
   const isEdit = !!id
 

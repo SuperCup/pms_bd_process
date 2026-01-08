@@ -1,23 +1,70 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Empty, Spin, Tag, Avatar } from 'antd'
-import { DownOutlined, RightOutlined } from '@ant-design/icons'
+import { Table, Empty, Spin, Tag, Avatar, Button, Modal, Form, Checkbox, DatePicker, Select, message, Tooltip } from 'antd'
+import { DownOutlined, RightOutlined, SettingOutlined } from '@ant-design/icons'
 import { getKAOpportunities } from '@/api/opportunity'
-import type { Opportunity } from '@/types'
+import { getCustomerList } from '@/api/customer'
+import { getKAFilterConfig, saveKAFilterConfig, type KAFilterConfig } from '@/api/kaFilter'
+import type { Opportunity, Customer } from '@/types'
 import { formatDate, isH5 } from '@/utils'
 import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS } from '@/utils/constants'
+import { useUserStore } from '@/stores/userStore'
 import type { ColumnsType } from 'antd/es/table'
+import dayjs from 'dayjs'
+import BoardKAMobile from './mobile'
 import './index.less'
+
+const { RangePicker } = DatePicker
+const { Option } = Select
+
+// 筛选配置接口（与API接口保持一致）
+type FilterConfig = KAFilterConfig
 
 const BoardKA: React.FC = () => {
   const navigate = useNavigate()
+  const { user } = useUserStore()
   const [loading, setLoading] = useState(false)
   const [groupedData, setGroupedData] = useState<Record<string, Opportunity[]>>({})
+  const [allGroupedData, setAllGroupedData] = useState<Record<string, Opportunity[]>>({})
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [filterConfig, setFilterConfig] = useState<FilterConfig | null>(null)
+  const [filterModalVisible, setFilterModalVisible] = useState(false)
+  const [customerOptions, setCustomerOptions] = useState<Customer[]>([])
+  const [form] = Form.useForm()
+
+  // 检查是否有权限编辑筛选配置（暂时对所有用户开放，后续可改为仅joyce和ken）
+  const canEditFilter = true // 暂时对所有用户开放权限
 
   useEffect(() => {
     fetchData()
+    fetchCustomers()
+    loadFilterConfig()
   }, [])
+
+  useEffect(() => {
+    applyFilter()
+  }, [filterConfig, allGroupedData])
+
+  const fetchCustomers = async () => {
+    try {
+      const res = await getCustomerList({ pageSize: 1000, isKA: true })
+      setCustomerOptions(res.list)
+    } catch (error) {
+      console.error('获取客户列表失败', error)
+    }
+  }
+
+  // 加载筛选配置
+  const loadFilterConfig = async () => {
+    try {
+      const config = await getKAFilterConfig()
+      if (config) {
+        setFilterConfig(config)
+      }
+    } catch (error) {
+      console.error('加载筛选配置失败', error)
+    }
+  }
 
   const fetchData = async () => {
     setLoading(true)
@@ -40,6 +87,7 @@ const BoardKA: React.FC = () => {
         })
       })
 
+      setAllGroupedData(grouped)
       setGroupedData(grouped)
       // 默认展开所有客户组
       setExpandedRows(new Set(Object.keys(grouped)))
@@ -47,6 +95,74 @@ const BoardKA: React.FC = () => {
       console.error('获取KA客户商机失败', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // 应用筛选条件
+  const applyFilter = () => {
+    if (!filterConfig) {
+      setGroupedData(allGroupedData)
+      return
+    }
+
+    const filtered: Record<string, Opportunity[]> = {}
+    const customerIds = filterConfig.visibleCustomers || []
+
+    Object.keys(allGroupedData).forEach((customerName) => {
+      const customer = customerOptions.find(c => c.name === customerName)
+      // 如果配置了visibleCustomers且该客户不在列表中，则隐藏该客户
+      if (customer && customerIds.length > 0 && !customerIds.includes(customer.id)) {
+        return // 隐藏该客户
+      }
+
+      let opportunities = [...allGroupedData[customerName]]
+
+      // 按创建时间筛选
+      if (filterConfig.createTimeRange && filterConfig.createTimeRange.length === 2) {
+        const [start, end] = filterConfig.createTimeRange
+        opportunities = opportunities.filter(opp => {
+          const createTime = dayjs(opp.createTime)
+          return (createTime.isAfter(dayjs(start).startOf('day')) || createTime.isSame(dayjs(start).startOf('day'))) 
+            && (createTime.isBefore(dayjs(end).endOf('day')) || createTime.isSame(dayjs(end).endOf('day')))
+        })
+      }
+
+      // 按状态筛选
+      if (filterConfig.status && filterConfig.status.length > 0) {
+        opportunities = opportunities.filter(opp => filterConfig.status!.includes(opp.status))
+      }
+
+      // 按计划完成时间筛选
+      if (filterConfig.planCompleteTimeRange && filterConfig.planCompleteTimeRange.length === 2) {
+        const [start, end] = filterConfig.planCompleteTimeRange
+        opportunities = opportunities.filter(opp => {
+          const planTime = dayjs(opp.planCompleteTime)
+          return (planTime.isAfter(dayjs(start).startOf('day')) || planTime.isSame(dayjs(start).startOf('day'))) 
+            && (planTime.isBefore(dayjs(end).endOf('day')) || planTime.isSame(dayjs(end).endOf('day')))
+        })
+      }
+
+      if (opportunities.length > 0) {
+        filtered[customerName] = opportunities
+      }
+    })
+
+    setGroupedData(filtered)
+  }
+
+  // 计算客户统计信息
+  const calculateCustomerStats = (_customerName: string, opportunities: Opportunity[]) => {
+    const total = opportunities.length
+    const won = opportunities.filter(opp => opp.status === 'won').length
+    const conversionRate = total > 0 ? ((won / total) * 100).toFixed(1) : '0.0'
+    
+    // 获取总负责人（取第一个商机的跟进人，或根据业务逻辑确定）
+    const mainFollower = opportunities.length > 0 ? opportunities[0].follower : null
+
+    return {
+      total,
+      conversionRate,
+      mainFollower
     }
   }
 
@@ -58,6 +174,91 @@ const BoardKA: React.FC = () => {
       newExpanded.add(customerName)
     }
     setExpandedRows(newExpanded)
+  }
+
+  const handleFilterConfig = () => {
+    if (!canEditFilter) {
+      message.warning('您没有权限编辑筛选配置，仅joyce和ken可以编辑')
+      return
+    }
+    
+    // 初始化表单值
+    const initialValues: any = {
+      visibleCustomers: customerOptions.map(c => c.id),
+      status: [],
+      createTimeRange: undefined,
+      planCompleteTimeRange: undefined,
+    }
+    
+    if (filterConfig) {
+      initialValues.visibleCustomers = filterConfig.visibleCustomers && filterConfig.visibleCustomers.length > 0
+        ? filterConfig.visibleCustomers
+        : customerOptions.map(c => c.id)
+      initialValues.status = filterConfig.status || []
+      if (filterConfig.createTimeRange && filterConfig.createTimeRange.length === 2) {
+        initialValues.createTimeRange = [dayjs(filterConfig.createTimeRange[0]), dayjs(filterConfig.createTimeRange[1])]
+      }
+      if (filterConfig.planCompleteTimeRange && filterConfig.planCompleteTimeRange.length === 2) {
+        initialValues.planCompleteTimeRange = [dayjs(filterConfig.planCompleteTimeRange[0]), dayjs(filterConfig.planCompleteTimeRange[1])]
+      }
+    }
+    
+    form.setFieldsValue(initialValues)
+    setFilterModalVisible(true)
+  }
+
+  const handleFilterSubmit = async () => {
+    try {
+      const values = await form.validateFields()
+      const config: FilterConfig = {
+        visibleCustomers: values.visibleCustomers || [],
+        status: values.status || [],
+      }
+      
+      if (values.createTimeRange && values.createTimeRange.length === 2) {
+        config.createTimeRange = [
+          values.createTimeRange[0].format('YYYY-MM-DD'),
+          values.createTimeRange[1].format('YYYY-MM-DD')
+        ]
+      }
+      
+      if (values.planCompleteTimeRange && values.planCompleteTimeRange.length === 2) {
+        config.planCompleteTimeRange = [
+          values.planCompleteTimeRange[0].format('YYYY-MM-DD'),
+          values.planCompleteTimeRange[1].format('YYYY-MM-DD')
+        ]
+      }
+      
+      // 保存筛选配置
+      await saveKAFilterConfig(config)
+      setFilterConfig(config)
+      setFilterModalVisible(false)
+      message.success('筛选配置已保存')
+    } catch (error) {
+      console.error('保存筛选配置失败', error)
+      message.error('保存筛选配置失败')
+    }
+  }
+
+  const handleFilterReset = async () => {
+    try {
+      // 重置表单为默认值（显示所有客户）
+      const defaultValues = {
+        visibleCustomers: customerOptions.map(c => c.id),
+        status: [],
+        createTimeRange: undefined,
+        planCompleteTimeRange: undefined,
+      }
+      form.setFieldsValue(defaultValues)
+      
+      // 清除保存的配置
+      await saveKAFilterConfig({ visibleCustomers: [], status: [] })
+      setFilterConfig(null)
+      message.success('筛选配置已重置')
+    } catch (error) {
+      console.error('重置筛选配置失败', error)
+      message.error('重置筛选配置失败')
+    }
   }
 
   const getImportanceTag = (importance: Opportunity['importance']) => {
@@ -92,17 +293,14 @@ const BoardKA: React.FC = () => {
   }
 
   const getCustomerTagColor = (customerName: string) => {
-    // 根据客户名称返回不同的颜色
     const colors: Record<string, string> = {
       '和路雪': 'purple',
       '雀巢': 'green',
-      // 可以添加更多客户颜色映射
     }
     return colors[customerName] || 'blue'
   }
 
   const getAvatarColor = (name: string) => {
-    // 根据姓名返回不同的背景色
     const colors: Record<string, string> = {
       '黄贤春': '#ffc53d',
       '赵露明': '#ff4d4f',
@@ -220,104 +418,145 @@ const BoardKA: React.FC = () => {
 
   const isMobile = isH5()
 
-  // 移动端视图
-  const renderMobileView = () => {
-    return (
-      <div className="mobile-board-content">
-        {customerNames.map((customerName) => {
-          const opportunities = groupedData[customerName]
-          return (
-            <div key={customerName} className="mobile-customer-section">
-              <div className="mobile-section-header">
-                <Tag color={getCustomerTagColor(customerName)}>{customerName}</Tag>
-              </div>
-              <div className="mobile-opportunity-list">
-                {opportunities.map((item) => (
-                  <div
-                    key={item.id}
-                    className="mobile-opportunity-item"
-                    onClick={() => navigate(`/opportunity/detail/${item.id}`)}
-                  >
-                    <div className="item-name">{item.item}</div>
-                    <div className="item-info">
-                      <div className="info-row">
-                        <span className="info-label">计划完成时间：</span>
-                        <span className="info-value">{formatDate(item.planCompleteTime, 'YYYY-MM-DD')}</span>
-                      </div>
-                      <div className="info-row">
-                        <span className="info-label">重要程度：</span>
-                        <span className="info-value">{getImportanceTag(item.importance)}</span>
-                      </div>
-                      <div className="info-row">
-                        <span className="info-label">类型：</span>
-                        <span className="info-value">{getTypeTag(item.type)}</span>
-                      </div>
-                      <div className="info-row">
-                        <span className="info-label">跟进人：</span>
-                        <span className="info-value">{item.follower.name}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    )
+  if (isMobile) {
+    return <BoardKAMobile />
   }
 
   return (
     <div className="board-ka-page">
-      {!isMobile && (
-        <div className="page-header">
-          <h2 className="page-title">KA客户事项看板</h2>
-        </div>
-      )}
+      <div className="page-header">
+        <h2 className="page-title">KA客户事项看板</h2>
+        <Tooltip title="筛选配置">
+          <Button
+            type="default"
+            icon={<SettingOutlined />}
+            onClick={handleFilterConfig}
+            style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)' }}
+          >
+            筛选配置
+          </Button>
+        </Tooltip>
+      </div>
+      <div className="board-content">
+        {customerNames.map((customerName) => {
+          const isExpanded = expandedRows.has(customerName)
+          const opportunities = groupedData[customerName]
+          const stats = calculateCustomerStats(customerName, opportunities)
 
-      {isMobile ? (
-        renderMobileView()
-      ) : (
-        <div className="board-content">
-          {customerNames.map((customerName) => {
-            const isExpanded = expandedRows.has(customerName)
-            const opportunities = groupedData[customerName]
-
-            return (
-              <div key={customerName} className="customer-group">
-                <div
-                  className="group-header"
-                  onClick={() => toggleRow(customerName)}
-                >
-                  <div className="group-title">
-                    {isExpanded ? <DownOutlined /> : <RightOutlined />}
-                    <Tag color={getCustomerTagColor(customerName)}>{customerName}</Tag>
-                  </div>
+          return (
+            <div key={customerName} className="customer-group">
+              <div
+                className="group-header"
+                onClick={() => toggleRow(customerName)}
+              >
+                <div className="group-title">
+                  {isExpanded ? <DownOutlined /> : <RightOutlined />}
+                  <Tag color={getCustomerTagColor(customerName)}>{customerName}</Tag>
+                  <span className="group-stats">
+                    <span className="stat-item">商机数：{stats.total}</span>
+                    <span className="stat-item">转化率：{stats.conversionRate}%</span>
+                    {stats.mainFollower && (
+                      <span className="stat-item">总负责人：{stats.mainFollower.name}</span>
+                    )}
+                  </span>
                 </div>
-
-                {isExpanded && (
-                  <>
-                    <Table
-                      columns={createColumns(customerName)}
-                      dataSource={opportunities.map((item) => ({
-                        ...item,
-                        key: item.id,
-                      }))}
-                      pagination={false}
-                      size="small"
-                      className="ka-table"
-                      onRow={(record) => ({
-                        onClick: () => navigate(`/opportunity/detail/${record.id}`),
-                        style: { cursor: 'pointer' },
-                      })}
-                    />
-                  </>
-                )}
               </div>
-            )
-          })}
+
+              {isExpanded && (
+                <>
+                  <Table
+                    columns={createColumns(customerName)}
+                    dataSource={opportunities.map((item) => ({
+                      ...item,
+                      key: item.id,
+                    }))}
+                    pagination={false}
+                    size="small"
+                    className="ka-table"
+                    onRow={(record) => ({
+                      onClick: () => navigate(`/opportunity/detail/${record.id}`),
+                      style: { cursor: 'pointer' },
+                    })}
+                  />
+                </>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* 筛选配置弹窗 */}
+      <Modal
+        title="筛选配置"
+        open={filterModalVisible}
+        onOk={handleFilterSubmit}
+        onCancel={() => setFilterModalVisible(false)}
+        width={600}
+        okText="保存"
+        cancelText="取消"
+        footer={[
+          <Button key="reset" onClick={handleFilterReset}>
+            重置
+          </Button>,
+          <Button key="cancel" onClick={() => setFilterModalVisible(false)}>
+            取消
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleFilterSubmit}>
+            保存
+          </Button>,
+        ]}
+      >
+        <div style={{ marginBottom: 16, padding: 12, background: '#fff7e6', border: '1px solid #ffd591', borderRadius: 4 }}>
+          <strong style={{ color: '#d46b08' }}>开发备注：</strong>
+          <span style={{ color: '#d46b08' }}>权限仅对joyce&ken开放，其他人无权编辑</span>
         </div>
-      )}
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="visibleCustomers"
+            label="显示/隐藏客户"
+            rules={[{ required: true, message: '请选择要显示的客户' }]}
+            tooltip="选择要显示的客户，未选中的客户将被隐藏"
+          >
+            <Checkbox.Group>
+              {customerOptions.map(customer => (
+                <Checkbox key={customer.id} value={customer.id}>
+                  {customer.name}
+                </Checkbox>
+              ))}
+            </Checkbox.Group>
+          </Form.Item>
+
+          <Form.Item 
+            name="createTimeRange" 
+            label="创建时间范围"
+            tooltip="筛选商机的创建时间范围"
+          >
+            <RangePicker style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item 
+            name="planCompleteTimeRange" 
+            label="计划完成时间范围"
+            tooltip="筛选商机的计划完成时间范围"
+          >
+            <RangePicker style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item 
+            name="status" 
+            label="状态筛选"
+            tooltip="筛选商机的状态"
+          >
+            <Select mode="multiple" placeholder="请选择状态（可多选）" allowClear>
+              {STATUS_OPTIONS.map(opt => (
+                <Option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   )
 }

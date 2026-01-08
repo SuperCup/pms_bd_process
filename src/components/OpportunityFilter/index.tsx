@@ -2,12 +2,16 @@ import { useState, useEffect } from 'react'
 import { Form, Input, DatePicker, Select, Button, Row, Col, Space } from 'antd'
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { OpportunityFilter } from '@/types'
-import { IMPORTANCE_OPTIONS, TYPE_OPTIONS, STATUS_OPTIONS } from '@/utils/constants'
 import { formatDate } from '@/utils'
 import dayjs from 'dayjs'
 
 const { RangePicker } = DatePicker
 const { Option } = Select
+
+interface OptionItem {
+  label: string
+  value: string
+}
 
 interface OpportunityFilterProps {
   filter: OpportunityFilter
@@ -16,6 +20,9 @@ interface OpportunityFilterProps {
   customerOptions?: Array<{ label: string; value: string }>
   followerOptions?: Array<{ label: string; value: string }>
   yearOptions?: number[]
+  importanceOptions?: OptionItem[]
+  statusOptions?: OptionItem[]
+  typeOptions?: OptionItem[]
 }
 
 const OpportunityFilter: React.FC<OpportunityFilterProps> = ({
@@ -25,6 +32,9 @@ const OpportunityFilter: React.FC<OpportunityFilterProps> = ({
   customerOptions = [],
   followerOptions = [],
   yearOptions = [],
+  importanceOptions = [],
+  statusOptions = [],
+  typeOptions = [],
 }) => {
   const [form] = Form.useForm()
   const [expanded, setExpanded] = useState(false)
@@ -120,7 +130,7 @@ const OpportunityFilter: React.FC<OpportunityFilterProps> = ({
             <Col xs={24} sm={12} md={8} lg={6}>
               <Form.Item name="status" label="状态">
                 <Select placeholder="请选择状态" allowClear>
-                  {STATUS_OPTIONS.map((opt) => (
+                  {statusOptions.map((opt) => (
                     <Option key={opt.value} value={opt.value}>
                       {opt.label}
                     </Option>
@@ -131,7 +141,7 @@ const OpportunityFilter: React.FC<OpportunityFilterProps> = ({
             <Col xs={24} sm={12} md={8} lg={6}>
               <Form.Item name="importance" label="重要程度">
                 <Select placeholder="请选择重要程度" allowClear>
-                  {IMPORTANCE_OPTIONS.map((opt) => (
+                  {importanceOptions.map((opt) => (
                     <Option key={opt.value} value={opt.value}>
                       {opt.label}
                     </Option>
@@ -142,7 +152,7 @@ const OpportunityFilter: React.FC<OpportunityFilterProps> = ({
             <Col xs={24} sm={12} md={8} lg={6}>
               <Form.Item name="type" label="类型">
                 <Select placeholder="请选择类型" allowClear>
-                  {TYPE_OPTIONS.map((opt) => (
+                  {typeOptions.map((opt) => (
                     <Option key={opt.value} value={opt.value}>
                       {opt.label}
                     </Option>

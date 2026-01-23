@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useBlocker } from 'react-router-dom'
-import { Card, Descriptions, Tag, Button, message, Modal, Form, Input, Switch, Select, Table } from 'antd'
+import { Card, Button, message, Modal, Form, Input, Switch, Select } from 'antd'
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons'
 import { getCustomerDetail, updateCustomer } from '@/api/customer'
 import { getUserList } from '@/api/user'

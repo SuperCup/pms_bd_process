@@ -136,8 +136,8 @@ const CustomerListMobile: React.FC = () => {
                   </div>
                   {item.contacts && item.contacts.length > 0 && (
                     <div className="card-subtitle">
-                      {item.contacts[0].name}
-                      {item.contacts.length > 1 && ` 等${item.contacts.length}人`}
+                      {item.contacts[0].departmentBrand || '未设置部门/品牌'}
+                      {item.contacts.length > 1 && ` 等${item.contacts.length}个`}
                     </div>
                   )}
                 </div>

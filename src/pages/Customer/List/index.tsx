@@ -186,7 +186,7 @@ const CustomerList: React.FC = () => {
       dataIndex: 'mainVP',
       key: 'mainVP',
       width: 150,
-      render: (vpId, record) => {
+      render: (vpId) => {
         const vp = vpOptions.find(u => u.id === vpId)
         return vp ? `${vp.name} (${vp.bu})` : '-'
       },

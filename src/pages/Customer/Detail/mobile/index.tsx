@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useBlocker } from 'react-router-dom'
-import { Card, Button, message, Modal, Form, Input, Switch } from 'antd'
+import { Card, Button, message, Modal, Form, Input, Switch, Select } from 'antd'
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons'
 import { getCustomerDetail, updateCustomer } from '@/api/customer'
+import { getUserList } from '@/api/user'
 import PMSCustomerSelect from '@/components/PMSCustomerSelect'
 import CustomerContactList from '@/components/CustomerContactList'
-import type { Customer } from '@/types'
+import type { Customer, User } from '@/types'
 import { formatDate } from '@/utils'
 import '../index.less'
 
@@ -17,13 +18,24 @@ const CustomerDetailMobile: React.FC = () => {
   const [saving, setSaving] = useState(false)
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [vpOptions, setVpOptions] = useState<User[]>([])
   const initialValuesRef = useRef<any>(null)
 
   useEffect(() => {
+    fetchVpOptions()
     if (id) {
       fetchDetail()
     }
   }, [id])
+
+  const fetchVpOptions = async () => {
+    try {
+      const res = await getUserList()
+      setVpOptions(res)
+    } catch (error) {
+      console.error('获取VP列表失败', error)
+    }
+  }
 
   // 阻止导航（如果有未保存的更改）
   const blocker = useBlocker(
@@ -61,6 +73,8 @@ const CustomerDetailMobile: React.FC = () => {
         code: res.code,
         isKA: res.isKA,
         pmsCustomer: res.pmsCustomer,
+        customerType: res.customerType,
+        mainVP: res.mainVP,
         contacts: res.contacts || [],
       }
       form.setFieldsValue(initialValues)
@@ -83,6 +97,8 @@ const CustomerDetailMobile: React.FC = () => {
         code: values.code,
         isKA: values.isKA || false,
         pmsCustomer: values.pmsCustomer,
+        customerType: values.customerType,
+        mainVP: values.mainVP,
         contacts: values.contacts || [],
       }
 
@@ -167,7 +183,28 @@ const CustomerDetailMobile: React.FC = () => {
             <PMSCustomerSelect />
           </Form.Item>
 
-          <Form.Item name="contacts" label="联系人">
+          <Form.Item name="customerType" label="客户类型">
+            <Select placeholder="请选择客户类型">
+              <Select.Option value="key">重点客户</Select.Option>
+              <Select.Option value="silent">沉默客户</Select.Option>
+              <Select.Option value="new">新客户</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="mainVP" label="主要负责人（VP）">
+            <Select placeholder="请选择主要负责人（VP）" showSearch filterOption={(input, option) => {
+              const label = typeof option?.label === 'string' ? option.label : String(option?.label || '')
+              return label.toLowerCase().includes(input.toLowerCase())
+            }}>
+              {vpOptions.map((user) => (
+                <Select.Option key={user.id} value={user.id}>
+                  {user.name} ({user.bu})
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="contacts" label="部门/品牌">
             <CustomerContactList />
           </Form.Item>
 

@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Form, Input, Switch, Button, Card, message, Space } from 'antd'
+import { Form, Input, Switch, Button, Card, message, Space, Select } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { getCustomerDetail, createCustomer, updateCustomer, checkCustomerDuplicate } from '@/api/customer'
-import type { Customer } from '@/types'
+import { getUserList } from '@/api/user'
+import type { Customer, User } from '@/types'
 import { isH5 } from '@/utils'
 import PMSCustomerSelect from '@/components/PMSCustomerSelect'
 import CustomerContactList from '@/components/CustomerContactList'
 import './index.less'
+
+const { Option } = Select
 
 
 const CustomerEdit: React.FC = () => {
@@ -15,14 +18,25 @@ const CustomerEdit: React.FC = () => {
   const navigate = useNavigate()
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
+  const [vpOptions, setVpOptions] = useState<User[]>([])
 
   const isEdit = !!id
 
   useEffect(() => {
+    fetchVpOptions()
     if (isEdit && id) {
       fetchDetail()
     }
   }, [id])
+
+  const fetchVpOptions = async () => {
+    try {
+      const res = await getUserList()
+      setVpOptions(res)
+    } catch (error) {
+      console.error('获取VP列表失败', error)
+    }
+  }
 
   const fetchDetail = async () => {
     setLoading(true)
@@ -33,6 +47,8 @@ const CustomerEdit: React.FC = () => {
         code: res.code,
         isKA: res.isKA,
         pmsCustomer: res.pmsCustomer,
+        customerType: res.customerType,
+        mainVP: res.mainVP,
         contacts: res.contacts || [],
       })
     } catch (error) {
@@ -64,6 +80,8 @@ const CustomerEdit: React.FC = () => {
         code: values.code,
         isKA: values.isKA || false,
         pmsCustomer: values.pmsCustomer,
+        customerType: values.customerType,
+        mainVP: values.mainVP,
         contacts: values.contacts || [],
       }
 
@@ -119,7 +137,28 @@ const CustomerEdit: React.FC = () => {
             <PMSCustomerSelect placeholder="请选择PMS客户" />
           </Form.Item>
 
-          <Form.Item name="contacts" label="客户联系人">
+          <Form.Item name="customerType" label="客户类型">
+            <Select placeholder="请选择客户类型">
+              <Select.Option value="key">重点客户</Select.Option>
+              <Select.Option value="silent">沉默客户</Select.Option>
+              <Select.Option value="new">新客户</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="mainVP" label="主要负责人（VP）">
+            <Select placeholder="请选择主要负责人（VP）" showSearch filterOption={(input, option) => {
+              const label = typeof option?.label === 'string' ? option.label : String(option?.label || '')
+              return label.toLowerCase().includes(input.toLowerCase())
+            }}>
+              {vpOptions.map((user) => (
+                <Option key={user.id} value={user.id}>
+                  {user.name} ({user.bu})
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="contacts" label="部门/品牌">
             <CustomerContactList />
           </Form.Item>
 

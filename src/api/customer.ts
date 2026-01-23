@@ -7,7 +7,7 @@ import type { Customer } from '@/types'
 const USE_MOCK = true
 
 // 获取客户列表
-export const getCustomerList = async (params?: { keyword?: string; isKA?: boolean; page?: number; pageSize?: number }) => {
+export const getCustomerList = async (params?: { keyword?: string; isKA?: boolean; mainVP?: string; customerType?: string; page?: number; pageSize?: number }) => {
   if (USE_MOCK) {
     await mockDelay()
     let filtered = [...mockCustomers]
@@ -17,6 +17,12 @@ export const getCustomerList = async (params?: { keyword?: string; isKA?: boolea
     }
     if (params?.isKA !== undefined) {
       filtered = filtered.filter(item => item.isKA === params.isKA)
+    }
+    if (params?.mainVP) {
+      filtered = filtered.filter(item => item.mainVP === params.mainVP)
+    }
+    if (params?.customerType) {
+      filtered = filtered.filter(item => item.customerType === params.customerType)
     }
     
     const page = params?.page || 1

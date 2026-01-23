@@ -36,7 +36,7 @@ const Board: React.FC = () => {
   const tabItems = [
     {
       key: 'last-week',
-      label: '上周新增商机',
+      label: '活跃商机',
       children: <BoardLastWeek />,
     },
     {

@@ -18,7 +18,7 @@ const menuItems: MenuProps['items'] = [
   {
     key: '/board/last-week',
     icon: <DashboardOutlined />,
-    label: '上周新增商机',
+    label: '活跃商机',
   },
   {
     key: '/board/ka',

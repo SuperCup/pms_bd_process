@@ -27,10 +27,10 @@ export interface PMSCustomer {
 // 客户联系人类型
 export interface CustomerContact {
   id: string
-  name: string // 姓名
-  phone?: string // 电话
-  position?: string // 职位
-  remark?: string // 备注
+  departmentBrand?: string // 部门/品牌
+  industry?: string // 行业
+  directorManager?: string // 跟进客户总监/经理
+  mainBusiness?: string | string[] // 主要业务（支持多选）
 }
 
 // 客户类型
@@ -47,6 +47,7 @@ export interface Customer {
   address?: string // 地址
   follower?: User // 跟进人
   customerType?: CustomerType // 客户类型：重点客户、沉默客户、新客户
+  mainVP?: string // 主要负责人（VP）
   createTime: string
   updateTime: string
 }

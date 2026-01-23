@@ -72,3 +72,22 @@ export const STORAGE_KEY = {
   FIELD_CONFIG: 'fieldConfig',
 }
 
+// 行业选项
+export const INDUSTRY_OPTIONS = [
+  { label: '包装食品', value: '包装食品' },
+  { label: '宠物食品', value: '宠物食品' },
+  { label: '饮料乳品', value: '饮料乳品' },
+  { label: '母婴', value: '母婴' },
+  { label: '个护美妆', value: '个护美妆' },
+  { label: '家电', value: '家电' },
+]
+
+// 主要业务选项（示例，可根据实际需求调整）
+export const MAIN_BUSINESS_OPTIONS = [
+  { label: '采购', value: '采购' },
+  { label: '销售', value: '销售' },
+  { label: '市场推广', value: '市场推广' },
+  { label: '品牌合作', value: '品牌合作' },
+  { label: '渠道拓展', value: '渠道拓展' },
+]
+

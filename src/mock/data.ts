@@ -6,6 +6,8 @@ export const mockUsers: User[] = [
   { id: '1', name: '王雄军', bu: 'BU-A', role: 'business' },
   { id: '2', name: '黄贤春', bu: 'BU-B', role: 'business' },
   { id: '3', name: '赵露明', bu: 'BU-A', role: 'business' },
+  { id: '4', name: 'David Zhai', bu: 'BU-A', role: 'manager' },
+  { id: '5', name: 'Mon Li', bu: 'BU-B', role: 'manager' },
 ]
 
 // 模拟PMS客户数据（根据图片）
@@ -26,21 +28,167 @@ export const mockPMSCustomers: PMSCustomer[] = [
 
 // 模拟客户数据
 export const mockCustomers: Customer[] = [
-  { id: '1', name: '景兴', isKA: false, createTime: dayjs().subtract(30, 'day').toISOString(), updateTime: dayjs().subtract(5, 'day').toISOString() },
-  { id: '2', name: '达能脉动', isKA: true, createTime: dayjs().subtract(25, 'day').toISOString(), updateTime: dayjs().subtract(3, 'day').toISOString() },
-  { id: '3', name: '高露洁', isKA: true, createTime: dayjs().subtract(20, 'day').toISOString(), updateTime: dayjs().subtract(10, 'day').toISOString() },
-  { id: '4', name: '可口可乐', isKA: true, createTime: dayjs().subtract(15, 'day').toISOString(), updateTime: dayjs().subtract(2, 'day').toISOString() },
-  { id: '5', name: '嘉士伯', isKA: false, createTime: dayjs().subtract(10, 'day').toISOString(), updateTime: dayjs().subtract(1, 'day').toISOString() },
-  { id: '6', name: '雀巢', isKA: true, createTime: dayjs().subtract(8, 'day').toISOString(), updateTime: dayjs().subtract(1, 'day').toISOString() },
-  { id: '7', name: '康师傅', isKA: true, createTime: dayjs().subtract(7, 'day').toISOString(), updateTime: dayjs().toISOString() },
-  { id: '8', name: '东鹏特饮', isKA: false, createTime: dayjs().subtract(6, 'day').toISOString(), updateTime: dayjs().toISOString() },
-  { id: '9', name: '飞鹤', isKA: false, createTime: dayjs().subtract(5, 'day').toISOString(), updateTime: dayjs().toISOString() },
-  { id: '10', name: '伊利', isKA: true, createTime: dayjs().subtract(4, 'day').toISOString(), updateTime: dayjs().toISOString() },
-  { id: '11', name: '中粮', isKA: true, createTime: dayjs().subtract(3, 'day').toISOString(), updateTime: dayjs().toISOString() },
-  { id: '12', name: '立白集团', isKA: true, createTime: dayjs().subtract(2, 'day').toISOString(), updateTime: dayjs().toISOString() },
-  { id: '13', name: '联合利华', isKA: true, createTime: dayjs().subtract(1, 'day').toISOString(), updateTime: dayjs().toISOString() },
-  { id: '14', name: '金佰利', isKA: false, createTime: dayjs().toISOString(), updateTime: dayjs().toISOString() },
-  { id: '15', name: '和路雪', isKA: true, createTime: dayjs().subtract(5, 'day').toISOString(), updateTime: dayjs().toISOString() },
+  { 
+    id: '1', 
+    name: '景兴', 
+    isKA: false, 
+    customerType: 'new',
+    mainVP: '1',
+    createTime: dayjs().subtract(30, 'day').toISOString(), 
+    updateTime: dayjs().subtract(5, 'day').toISOString() 
+  },
+  { 
+    id: '2', 
+    name: '达能脉动', 
+    isKA: true, 
+    customerType: 'key',
+    mainVP: '4',
+    createTime: dayjs().subtract(25, 'day').toISOString(), 
+    updateTime: dayjs().subtract(3, 'day').toISOString() 
+  },
+  { 
+    id: '3', 
+    name: '高露洁', 
+    isKA: true, 
+    customerType: 'key',
+    mainVP: '5',
+    createTime: dayjs().subtract(20, 'day').toISOString(), 
+    updateTime: dayjs().subtract(10, 'day').toISOString() 
+  },
+  { 
+    id: '4', 
+    name: '可口可乐', 
+    isKA: true, 
+    customerType: 'key',
+    mainVP: '4',
+    createTime: dayjs().subtract(15, 'day').toISOString(), 
+    updateTime: dayjs().subtract(2, 'day').toISOString() 
+  },
+  { 
+    id: '5', 
+    name: '嘉士伯', 
+    isKA: false, 
+    customerType: 'silent',
+    mainVP: '1',
+    createTime: dayjs().subtract(10, 'day').toISOString(), 
+    updateTime: dayjs().subtract(1, 'day').toISOString() 
+  },
+  { 
+    id: '6', 
+    name: '雀巢', 
+    isKA: true, 
+    customerType: 'key',
+    mainVP: '4',
+    contacts: [
+      { id: '1', departmentBrand: '总部-采购部', industry: '包装食品', directorManager: '李艳晓', mainBusiness: '采购' },
+      { id: '2', departmentBrand: '宠物事业部', industry: '宠物食品', directorManager: 'Sugar Liu', mainBusiness: '销售' },
+      { id: '3', departmentBrand: '咖啡事业部', industry: '包装食品', directorManager: 'kama Hu', mainBusiness: '品牌合作' },
+      { id: '4', departmentBrand: '婴儿营养品事业部', industry: '母婴', directorManager: '封仙桃', mainBusiness: '市场推广' },
+      { id: '5', departmentBrand: '成人奶品事业部', industry: '饮料乳品', directorManager: 'Yoyo Ying', mainBusiness: '销售' },
+      { id: '6', departmentBrand: '糖果事业部', industry: '包装食品', directorManager: 'Crystal Li', mainBusiness: '品牌合作' },
+      { id: '7', departmentBrand: '太太乐事业部', industry: '包装食品', directorManager: '林燕真', mainBusiness: '渠道拓展' },
+      { id: '8', departmentBrand: '冰品事业部', industry: '饮料乳品', directorManager: '郑笑芩', mainBusiness: '销售' },
+      { id: '9', departmentBrand: '嘉宝', industry: '母婴', directorManager: 'Zac Zhang', mainBusiness: '市场推广' },
+      { id: '10', departmentBrand: '总部-IT', industry: '包装食品', directorManager: '金小景', mainBusiness: '采购' },
+      { id: '11', departmentBrand: '总部-到家运营团队', industry: '包装食品', directorManager: '李艳晓', mainBusiness: '渠道拓展' },
+      { id: '12', departmentBrand: '总部-数字化', industry: '包装食品', directorManager: 'Sugar Liu', mainBusiness: '市场推广' },
+    ],
+    createTime: dayjs().subtract(8, 'day').toISOString(), 
+    updateTime: dayjs().subtract(1, 'day').toISOString() 
+  },
+  { 
+    id: '7', 
+    name: '康师傅', 
+    isKA: true, 
+    customerType: 'key',
+    mainVP: '5',
+    createTime: dayjs().subtract(7, 'day').toISOString(), 
+    updateTime: dayjs().toISOString() 
+  },
+  { 
+    id: '8', 
+    name: '东鹏特饮', 
+    isKA: false, 
+    customerType: 'new',
+    mainVP: '2',
+    createTime: dayjs().subtract(6, 'day').toISOString(), 
+    updateTime: dayjs().toISOString() 
+  },
+  { 
+    id: '9', 
+    name: '飞鹤', 
+    isKA: false, 
+    customerType: 'silent',
+    mainVP: '3',
+    createTime: dayjs().subtract(5, 'day').toISOString(), 
+    updateTime: dayjs().toISOString() 
+  },
+  { 
+    id: '10', 
+    name: '伊利', 
+    isKA: true, 
+    customerType: 'key',
+    mainVP: '4',
+    contacts: [
+      { id: '1', departmentBrand: '总部-采购部', industry: '饮料乳品', directorManager: '李艳晓', mainBusiness: '采购' },
+      { id: '2', departmentBrand: '市场部', industry: '饮料乳品', directorManager: 'Sugar Liu', mainBusiness: '市场推广' },
+    ],
+    createTime: dayjs().subtract(4, 'day').toISOString(), 
+    updateTime: dayjs().toISOString() 
+  },
+  { 
+    id: '11', 
+    name: '中粮', 
+    isKA: true, 
+    customerType: 'key',
+    mainVP: '5',
+    createTime: dayjs().subtract(3, 'day').toISOString(), 
+    updateTime: dayjs().toISOString() 
+  },
+  { 
+    id: '12', 
+    name: '立白集团', 
+    isKA: true, 
+    customerType: 'key',
+    mainVP: '4',
+    createTime: dayjs().subtract(2, 'day').toISOString(), 
+    updateTime: dayjs().toISOString() 
+  },
+  { 
+    id: '13', 
+    name: '联合利华', 
+    isKA: true, 
+    customerType: 'key',
+    mainVP: '5',
+    contacts: [
+      { id: '1', departmentBrand: '和路雪', industry: '饮料乳品', directorManager: '李艳晓', mainBusiness: '销售' },
+      { id: '2', departmentBrand: '家乐', industry: '包装食品', directorManager: 'Sugar Liu', mainBusiness: '品牌合作' },
+      { id: '3', departmentBrand: 'HPC', industry: '个护美妆', directorManager: 'kama Hu', mainBusiness: '市场推广' },
+      { id: '4', departmentBrand: 'CCD', industry: '个护美妆', directorManager: '封仙桃', mainBusiness: '渠道拓展' },
+      { id: '5', departmentBrand: '沁园市场部', industry: '家电', directorManager: 'Yoyo Ying', mainBusiness: '市场推广' },
+      { id: '6', departmentBrand: '总部-SMM', industry: '个护美妆', directorManager: 'Crystal Li', mainBusiness: '销售' },
+    ],
+    createTime: dayjs().subtract(1, 'day').toISOString(), 
+    updateTime: dayjs().toISOString() 
+  },
+  { 
+    id: '14', 
+    name: '金佰利', 
+    isKA: false, 
+    customerType: 'silent',
+    mainVP: '1',
+    createTime: dayjs().toISOString(), 
+    updateTime: dayjs().toISOString() 
+  },
+  { 
+    id: '15', 
+    name: '和路雪', 
+    isKA: true, 
+    customerType: 'key',
+    mainVP: '5',
+    createTime: dayjs().subtract(5, 'day').toISOString(), 
+    updateTime: dayjs().toISOString() 
+  },
 ]
 
 // 模拟商机数据 - 根据图片中的数据
